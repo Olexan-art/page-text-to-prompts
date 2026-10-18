@@ -12,14 +12,17 @@ const worst = (verdicts) => (verdicts.includes("out") ? "out" : verdicts.include
 export function measureLeaf(spec, value) {
   if (spec.items) {
     const list = Array.isArray(value) ? value : [];
-    const items = list.map((text) => ({ words: countWords(text), chars: countChars(text), verdict: worst([rangeVerdict(countWords(text), spec.words), rangeVerdict(countChars(text), spec.chars)]) }));
+    const items = list.map((text) => ({ words: countWords(text), chars: countChars(text), verdict: worst(spec.charsDerived ? [rangeVerdict(countWords(text), spec.words)] : [rangeVerdict(countWords(text), spec.words), rangeVerdict(countChars(text), spec.chars)]) }));
     const countVerdict = rangeVerdict(list.length, spec.items, 0);
     return { words: Math.max(0, ...items.map((i) => i.words)), chars: Math.max(0, ...items.map((i) => i.chars)), count: list.length, items, verdict: worst([countVerdict === "in" ? "in" : "out", ...items.map((i) => i.verdict)]) };
   }
   const text = typeof value === "string" ? value : "";
   const words = countWords(text);
   const chars = countChars(text);
-  return { words, chars, verdict: text ? worst([rangeVerdict(words, spec.words), rangeVerdict(chars, spec.chars)]) : "out" };
+  // A derived character range is a backstop, not a target: only an authored one is scored.
+  const verdicts = [rangeVerdict(words, spec.words)];
+  if (!spec.charsDerived) verdicts.push(rangeVerdict(chars, spec.chars));
+  return { words, chars, verdict: text ? worst(verdicts) : "out" };
 }
 
 /**

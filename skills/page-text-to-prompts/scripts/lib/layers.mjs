@@ -94,6 +94,8 @@ export function segment(units, sections) {
     if (block.elements.every((u) => u.overlay)) reason = COOKIE.test(text) ? "cookie_banner" : "overlay";
     else if (tagReason) reason = tagReason;
     else if (words > 0 && linkWords / words > 0.7 && shortLinks) reason = "navigation";
+    // A mega-menu or a link footer: many short items (list entries, buttons, labels) and little else.
+    else if (block.elements.length >= 15 && words > 0 && block.elements.filter((u) => u.words <= 4 && !/\d/.test(u.text) && !/^h[12]$/.test(u.type)).reduce((n, u) => n + u.words, 0) / words >= 0.7) reason = "navigation";
     else if (words < 30 && LEGAL.test(text) && !block.elements.some(isHeading)) reason = "legal";
     else if ((block.section?.tag === "footer" || block.section?.role === "contentinfo") && !block.elements.some((u) => u.type === "h2" || u.type === "button")) reason = "footer";
     else if ((block.section?.tag === "header" || block.section?.role === "banner") && !block.section?.inMain && !block.elements.some((u) => u.type === "h1" || u.type === "button")) reason = "header";

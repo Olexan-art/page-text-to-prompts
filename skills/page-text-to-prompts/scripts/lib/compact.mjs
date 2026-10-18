@@ -75,7 +75,8 @@ export function charsPerWord(page) {
   }
   return words ? chars / words : 6.5;
 }
-const charRange = (w, cpw) => [Math.max(1, Math.floor(w[0] * cpw * 0.8)), Math.ceil(w[1] * cpw * 1.25)];
+// Derived, so generous: characters only back up the word range and should not flag an example on their own.
+const charRange = (w, cpw) => [Math.max(1, Math.floor(w[0] * cpw * 0.45)), Math.ceil(w[1] * cpw * 1.5)];
 
 /** One element line: `code "Label" | 3-5 | must | example` (or `items 3 | …`). */
 function parseLeaf(text, cpw, where, problems) {
@@ -89,7 +90,8 @@ function parseLeaf(text, cpw, where, problems) {
   const [, code, itemsRaw, label] = m;
   const words = range(parts[1]);
   if (!words) problems.push(`${where} ${code}: the word range "${parts[1] ?? ""}" is not like 3-5`);
-  const leaf = { element: code.toLowerCase(), ...(label ? { label } : {}), words: words || [1, 1], chars: charRange(words || [1, 1], cpw), must: (parts[2] || "").trim() };
+  // charsDerived: the range is the script's guess, used only as a wide backstop, never shown or scored.
+  const leaf = { element: code.toLowerCase(), ...(label ? { label } : {}), words: words || [1, 1], chars: charRange(words || [1, 1], cpw), charsDerived: true, must: (parts[2] || "").trim() };
   if (code.toLowerCase() === "items" || itemsRaw) leaf.items = range(itemsRaw) || [3, 3];
   if (FACT_VARIABLES.some((f) => leaf.must.includes(`{${f}}`))) leaf.fact = true;
   const example = parts.slice(3).join(" | ").trim();
@@ -180,6 +182,7 @@ export function parseCompact(text, page) {
       else if (k === "tone") block.tone = tone(value);
       else if (k === "avoid" || k === "avoids") block.avoids = value.split(";").map((x) => x.trim()).filter(Boolean);
       else if (k === "prompt") block.prompt = value.trim();
+      else if (k === "reason") block.block_type_reason = value.trim();
       else problems.push(`${block.id} ${where}: unknown field "${key}"`);
       if (k !== "techniques") list = "structure";
       return;
@@ -222,7 +225,9 @@ export function serializeCompact(a) {
     return `${indent}- ${head} | ${el.words[0]}-${el.words[1]} | ${el.must || ""} | ${example}`;
   };
   for (const b of a.blocks || []) {
-    out.push("", `## ${b.id} ${b.block_type} | ${b.name} | ${(b.source_blocks || []).join(" ")}`, `role: ${b.role}`);
+    out.push("", `## ${b.id} ${b.block_type} | ${b.name} | ${(b.source_blocks || []).join(" ")}`);
+    if (b.block_type_reason) out.push(`reason: ${b.block_type_reason}`);
+    out.push(`role: ${b.role}`);
     (b.structure || []).forEach((el, i) => {
       const ex = (b.example || [])[i] || {};
       if (el.children) {

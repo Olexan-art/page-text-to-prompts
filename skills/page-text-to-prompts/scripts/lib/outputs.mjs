@@ -79,9 +79,9 @@ export function buildMarkdown({ page, analysis }) {
     for (const e of b.structure) {
       if (e.children) {
         out.push(`- ${e.count} × ${e.label || e.element}:`);
-        for (const c of e.children) out.push(`  - ${c.label || c.element}: ${rng(c.words, L.w)}, ${rng(c.chars, L.c)}${c.must ? `; ${c.must}` : ""}`);
+        for (const c of e.children) out.push(`  - ${c.label || c.element}: ${rng(c.words, L.w)}${c.charsDerived ? "" : `, ${rng(c.chars, L.c)}`}${c.must ? `; ${c.must}` : ""}`);
       } else {
-        out.push(`- ${e.label || e.element}: ${rng(e.words, L.w)}, ${rng(e.chars, L.c)}${e.must ? `; ${e.must}` : ""}`);
+        out.push(`- ${e.label || e.element}: ${rng(e.words, L.w)}${e.charsDerived ? "" : `, ${rng(e.chars, L.c)}`}${e.must ? `; ${e.must}` : ""}`);
       }
     }
     out.push("");

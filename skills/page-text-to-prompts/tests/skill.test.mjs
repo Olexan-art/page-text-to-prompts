@@ -205,3 +205,20 @@ test("the brief carries word counts and the draft one header per candidate", asy
   assert.match(draft, /^language: en$/m);
   assert.ok(draft.includes("## p01 hero"));
 });
+
+test("a block of many short menu items is set aside as navigation", () => {
+  const items = Array.from({ length: 20 }, (_, i) => ({ text: "Menu item " + String.fromCharCode(65 + i), type: "li", visible: true, collapsed: null, overlay: false, group: null, item: null, sec: 0 }));
+  const units = classifyUnits([...items, { text: "A real heading", type: "h2", visible: true, collapsed: null, overlay: false, group: null, item: null, sec: 1 }, { text: "A paragraph with enough words to be content on its own page.", type: "p", visible: true, collapsed: null, overlay: false, group: null, item: null, sec: 1 }], { sourceKey: null, a11yKey: null });
+  const { blocks, excluded } = segment(units, [{ tag: "div" }, { tag: "section" }]);
+  assert.equal(excluded[0].reason, "navigation");
+  assert.equal(blocks.length, 1);
+});
+
+test("derived character ranges stay out of the prompt and out of the score", async () => {
+  const page = await studioPage();
+  const a = parseCompact(fixture("studio-analysis.en.md"), page).analysis;
+  const prompt = generatePrompt(a.blocks[0], "en");
+  assert.equal(/characters/.test(prompt), false);
+  assert.match(prompt, /- Eyebrow: 3–5 words; the main change/);
+  assert.match(generatePrompt({ ...a.blocks[7], block_type: "faq" }, "en"), /^Write an FAQ block/);
+});

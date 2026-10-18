@@ -257,7 +257,7 @@ function renderBlock(b, i, { measured, status, tag, total }) {
   const scale = Math.ceil(Math.max(1, ...(b.structure || []).flatMap((e) => (e.children ? e.children.map((c) => c.words[1]) : [e.words[1]]))) * 1.25);
   const leaves = measured.leaves;
   const leafFor = (path) => leaves.find((l) => l.path === path);
-  const vol = (spec) => both((L, lang) => (spec.items ? `${spec.items[0]}–${spec.items[1]} ${L.item} · ${L.each} ${rng(spec.words, L.w, lang)}` : `${rng(spec.words, L.w, lang)} · ${spec.chars[0]}–${spec.chars[1]}`));
+  const vol = (spec) => both((L, lang) => (spec.items ? `${spec.items[0] === spec.items[1] ? spec.items[0] : `${spec.items[0]}–${spec.items[1]}`} ${L.item} · ${L.each} ${rng(spec.words, L.w, lang)}` : spec.charsDerived ? rng(spec.words, L.w, lang) : `${rng(spec.words, L.w, lang)} · ${spec.chars[0]}–${spec.chars[1]}`));
   const row = (spec, child, path) => {
     const a = (spec.words[0] / scale) * 100;
     const w = Math.max(1.5, ((spec.words[1] - spec.words[0]) / scale) * 100);
@@ -308,7 +308,7 @@ function renderBlock(b, i, { measured, status, tag, total }) {
   const badges = [status.ok ? '<span class="badge s-ok">ok</span>' : "", status.js_only ? '<span class="badge s-js">js_only</span>' : "", status.collapsed ? '<span class="badge s-col">collapsed</span>' : "", status.not_in_a11y ? '<span class="badge s-na">not_in_a11y</span>' : ""].join("");
   const tone = b.tone || {};
   return `<details class="blk" id="${esc(b.id)}"${i < 2 ? " open" : ""}><summary><span class="nb">${n}</span><span class="ctype">${esc(b.block_type)}</span><span class="bname">${esc(b.name)}</span><span class="srcs">${esc(src)} · ${total(status)} ${t("wordsShort")}</span>${badges}${CARET}</summary>
-<div class="bbody"><dl class="role"><dt>${t("job")}</dt><dd>${esc(b.role)}</dd></dl>${status.collapsed ? `<p class="note col">${t("foldedNote")}</p>` : ""}${status.js_only ? `<p class="note js">${t("jsNote")}</p>` : ""}
+<div class="bbody"><dl class="role"><dt>${t("job")}</dt><dd>${esc(b.role ? b.role.charAt(0).toUpperCase() + b.role.slice(1) : "")}</dd></dl>${status.collapsed ? `<p class="note col">${t("foldedNote")}</p>` : ""}${status.js_only ? `<p class="note js">${t("jsNote")}</p>` : ""}
 <div class="anat"><div><p class="label">${t("structure")} ${tag("judgement")}</p><div class="struct">${struct}</div><p class="note" style="margin-top:6px;color:var(--faint);font-size:12.5px">${t("structNote")}</p></div>
 <div style="display:flex;flex-direction:column;gap:14px;min-width:0"><div><p class="label">${t("techniques")}</p><ul class="tech">${(b.techniques || []).map((x) => `<li><span>${vars(x)}</span></li>`).join("")}</ul></div>
 <div><p class="label">${t("tone")}</p><div class="tone-row"><span><b>${esc((tone.adjectives || []).join(", "))}</b></span>${tone.address ? `<span>${esc(tone.address)}</span>` : ""}</div></div>

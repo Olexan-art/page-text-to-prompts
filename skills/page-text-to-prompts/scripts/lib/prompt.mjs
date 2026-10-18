@@ -6,7 +6,7 @@ import { FACT_VARIABLES } from "./checks.mjs";
 
 const T = {
   en: {
-    write: (type) => `Write a ${type} for {product}, aimed at {audience}.`,
+    write: (type) => `Write ${/^(?:[aeiou]|FAQ)/i.test(type) ? "an" : "a"} ${type} for {product}, aimed at {audience}.`,
     lang: (code) => (code === "en" ? "Write in English." : `Write in the language with the code "${code}".`),
     job: "Job of the block:",
     structure: "Structure:",
@@ -50,7 +50,7 @@ export function generatePrompt(block, language) {
   };
   const leafLine = (el, indent) => {
     noteFacts(el.must);
-    const size = el.items ? L.items(el.items, el.words) : `${L.words(el.words)}, ${L.chars(el.chars)}`;
+    const size = el.items ? L.items(el.items, el.words) : el.charsDerived ? L.words(el.words) : `${L.words(el.words)}, ${L.chars(el.chars)}`;
     return `${indent}- ${el.label || el.element}: ${size}${el.must ? `; ${el.must}` : ""}.`;
   };
   for (const el of block.structure || []) {
