@@ -1,6 +1,6 @@
 ---
 name: page-text-to-prompts
-description: Break a web page's copy into its blocks (hero, benefits, how it works, testimonials, pricing, FAQ, CTA…) and write, for each block, a reusable prompt that produces the same kind of text for another product, with an example measured against it. Copy only; design is ignored. Use when the user gives a URL and wants to break down or reverse-engineer a landing page's copy, make prompts for each section, write a block like this for their own site, or see how a competitor's page is written.
+description: Splits the copy of a web page into blocks (hero, benefits, how it works, testimonials, pricing, FAQ, CTA and others) and writes 1 reusable prompt per block. Each prompt writes the same kind of text for a different product and has an example checked against it. Copy only; the design is ignored. Use when the user gives a URL and asks to break down or reverse-engineer the copy of a landing page, make prompts per section, write a similar block for their site, or see how a competitor's page is written.
 ---
 
 Version 1.007.
@@ -21,11 +21,13 @@ The scripts read 1 web page and cut its copy into candidate blocks. You write a 
 - R1. Do not ask the user anything first. A URL is enough.
 - R2. **Own words.** No line you write may repeat 6 consecutive words of the page, case and punctuation ignored (`overlap`). This covers every field and every example.
 - R3. Do not name the site's brand: domain name, `og:site_name` (`brand`). Do not use any name from the page.
-- R4. Write `analysis.md` and every input file with the file-writing tool, never a shell heredoc. If the tool refuses, write the file under another name and copy it with `cp`.
+- R4. Write `analysis.md` and every input file with the file-writing tool, never a shell heredoc. If the tool refuses (some harnesses refuse `.md` files from a subagent), write the file under another name and copy it with `cp`.
 - R5. Never re-create the scripts' work by hand. Do not count words or characters. Do not write prompts.
 - R6. Never invent facts. Never write Russian text. The scripts call no model.
 
 ## Procedure
+
+Every path below may point anywhere writable; `work/` is the default, not a rule.
 
 1. **Read (script).** `node dist/read.mjs <url> --out work/page.json`
    - Options: `--no-render` (source HTML only), `--lang <code>` (draft language).
