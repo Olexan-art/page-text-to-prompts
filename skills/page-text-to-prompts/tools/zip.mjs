@@ -130,6 +130,8 @@ const fm = checkFrontmatter(readFileSync(join(SKILL_DIR, "SKILL.md"), "utf8"));
 const files = [join(SKILL_DIR, "SKILL.md"), ...walk(join(SKILL_DIR, "references")), ...walk(join(SKILL_DIR, "dist"))];
 const entries = files
   .map((path) => ({ name: `${FOLDER}/${relative(SKILL_DIR, path).replace(/\\/g, "/")}`, data: lf(path) }))
+  // The repository's licence travels with the skill.
+  .concat([{ name: `${FOLDER}/LICENSE`, data: lf(join(SKILL_DIR, "..", "..", "LICENSE")) }])
   .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
 
 const total = entries.reduce((s, e) => s + e.data.length, 0);

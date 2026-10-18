@@ -1,6 +1,6 @@
 # analysis.json (the full form)
 
-The agent normally writes the short `analysis.md` that SKILL.md shows; the build turns it into this object. `build.mjs` still accepts this JSON directly, for tools that produce it. `tests/fixtures/studio-analysis.en.md` and `studio-analysis.json` are complete, passing examples of both forms.
+The agent normally writes the short `analysis.md` that SKILL.md shows; the build turns it into this object. `build.mjs` still accepts this JSON directly, for tools that produce it. The skill's repository holds complete, passing examples of both forms in `tests/fixtures/` (`studio-analysis.en.md` and `studio-analysis.json`); they are not part of the installed skill.
 
 ```json
 {

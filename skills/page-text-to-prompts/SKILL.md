@@ -1,6 +1,6 @@
 ---
 name: page-text-to-prompts
-description: Break a web page's copy into its blocks (hero, benefits, how it works, testimonials, pricing, FAQ, CTA and so on) and produce, for each block, a reusable prompt that writes the same kind of text for a different product, with an example measured against it. Reads the page as raw HTML, as rendered in a local browser and as its accessibility tree, and draws an HTML report (English by default, with a Ukrainian switch). Copy only; design is ignored. Use when the user gives a URL and wants to "break down this landing page", "reverse-engineer the copy", "make prompts for each section", "write a block like this for my site", "how is this competitor's page written", or a copywriting template from a page. Also triggers on "analyse this page's copy", "turn this landing page into prompts" and "copy a section's structure".
+description: Break a web page's copy into its blocks (hero, benefits, how it works, testimonials, pricing, FAQ, CTA…) and write, for each block, a reusable prompt that produces the same kind of text for another product, with an example measured against it. Copy only; design is ignored. Use when the user gives a URL and wants to break down or reverse-engineer a landing page's copy, make prompts for each section, write a block like this for their own site, or see how a competitor's page is written.
 ---
 
 # Page text to prompts
@@ -24,6 +24,8 @@ It reads the page three ways (source HTML, a render in the local Chrome or Edge 
 **If the scripts cannot run here** (no Node 22, no shell, or the shell has no network so the read ends `REFUSED unreachable`), say so in one line and offer the saved-page route below. Do not write your own reading of the page from a browsing tool and present it as this skill's result: the layers, counts, checks and prompts come only from the scripts.
 
 ## 2. Fill in `work/analysis.md`
+
+When unsure which block type a section is, read `references/block-types.md`; for the `{variables}` a prompt may use, `references/variables.md`; for the full format of this file, `references/analysis-schema.md`.
 
 Keep it short. **Do not count words or characters**: take the word counts from `brief.md`, write ranges around them, and leave characters out (the script derives them). **Do not write prompts**: the build assembles each prompt from the lines below. Write in **English** unless the user asked for another language; then set `language:` to its code (e.g. `uk`) and write everything in it.
 
@@ -90,7 +92,7 @@ One public page per run, desktop only, no login, no captcha bypass, text in imag
 | Code | Tell the user |
 |---|---|
 | `invalid_url`, `blocked_scheme`, `blocked_host`, `blocked_address` | Not a public web address. |
-| `unreachable`, `http_error` | The site did not answer, or refused automated readers. Offer to work from a saved page: `node dist/read.mjs --file saved.html --url <address> --out work/page.json`. |
+| `unreachable`, `http_error`, `blocked` | The site did not answer, or refused automated readers (`blocked`: HTTP 401, 403 or 429). Offer to work from a saved page: `node dist/read.mjs --file saved.html --url <address> --out work/page.json`. |
 | `challenge` | A captcha or bot check. Do not get past it; offer the saved-page route. |
 | `not_html`, `too_large`, `empty` | Not a readable web page, or no text (probably images). |
 | `refused_ru_domain`, `refused_ru_hosting`, `refused_ru_audience`, `refused_language_ru` | Not analysed: Russian page or Russian site. The publisher's decision. |
