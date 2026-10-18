@@ -47,7 +47,7 @@ const v = page.visibility;
 const pct = (x) => `${Math.round(x * 100)}%`;
 console.log(`page.json: ${out}`);
 console.log(`brief.md: ${briefPath}  (read this, not page.json)`);
-console.log(`analysis.md: ${draftPath}  (draft: fill it in, one line per element)`);
+console.log(`analysis.md: ${draftPath}  (draft: fill in 1 line per element)`);
 console.log(`layers: ${page.page.layers.join(" + ")}${page.page.rendered ? ` (${page.page.browser})` : ` (no render: ${page.page.renderReason})`}`);
 console.log(`candidates: ${page.blocks.length} blocks, ${page.excluded.length} excluded`);
 console.log(`visible words: ${v.totalWords} · js_only ${pct(v.jsOnlyShare)} · collapsed ${pct(v.collapsedShare)} · hidden ${v.hidden.count} · a11y_only ${v.a11yOnly.count}`);

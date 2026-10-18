@@ -1,6 +1,8 @@
+Read this when you need the full form of the analysis, or when you write `analysis.json` instead of `analysis.md`.
+
 # analysis.json (the full form)
 
-The agent normally writes the short `analysis.md` that SKILL.md shows; the build turns it into this object. `build.mjs` still accepts this JSON directly, for tools that produce it. The skill's repository holds complete, passing examples of both forms in `tests/fixtures/` (`studio-analysis.en.md` and `studio-analysis.json`); they are not part of the installed skill.
+The build turns `analysis.md` into this object, and also accepts it directly. The repository (not the installed skill) holds passing examples: `tests/fixtures/studio-analysis.en.md` and `tests/fixtures/studio-analysis.json`.
 
 ```json
 {
@@ -53,10 +55,15 @@ The agent normally writes the short `analysis.md` that SKILL.md shows; the build
 }
 ```
 
-- `element` is a short code (`h1`, `eyebrow`, `button`, `answer`…); `label` is how the report and the markdown name it, in the user's language.
+## Rules
+
+- `element` is a short code (`h1`, `eyebrow`, `button`, `answer`, …). `label` names it in the report, in the user's language.
 - `words`, `chars` and `items` are inclusive `[min, max]` ranges.
-- A group has `count` and `children` and no ranges of its own. Its example entry has `items`: one list per card, each list mirroring `children`, and exactly `count` cards.
-- A bullet-list leaf has `items: [min, max]`; its example entry has `list` instead of `text`.
-- The example mirrors `structure` element by element, in order. The report sets the element's look from its code: `h1`, `h2`, `eyebrow`, `button`, `link`, `price`, `quote`, and anything with `title`, `name` or `question` reads as a heading.
-- `fact: true` on an element marks it in the report as sample data. Canonical fact variables (`risk_remover`, `outcome_number`, `customer_count`, `customer_n`, `testimonial_n`, `plan_n`, `guarantee`, `deadline`) must be declared with `"fact": true`.
-- Every candidate `bNN` in `page.json` appears exactly once, in some block's `source_blocks` or in `dropped`.
+- `profile.awareness`, `block_type` and `tone.formality` take the values listed in SKILL.md. `other` needs `block_type_reason`.
+- A group has `count` and `children`, no ranges, and does not nest. Its example entry has `items`: 1 to `count` cards, each a list mirroring `children`.
+- A bullet-list leaf has `items: [min, max]`. Its example entry has `list`, not `text`.
+- The example mirrors `structure` element by element, in order.
+- The report styles `h1`, `h2`, `eyebrow`, `button`, `link`, `price`, `quote` and any code with `title`, `name` or `question` as headings.
+- `fact: true` on an element marks it as sample data in the report. Declare each fact variable with `"fact": true`.
+- `prompt`, when present, replaces the assembled prompt.
+- Each candidate `bNN` in `page.json` appears exactly once: in 1 `source_blocks`, or in `dropped` with a reason.

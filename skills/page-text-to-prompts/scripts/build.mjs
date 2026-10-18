@@ -17,7 +17,7 @@ const flag = (name, fallback) => {
 };
 const positional = args.filter((a, i) => !a.startsWith("--") && !args[i - 1]?.startsWith("--"));
 if (positional.length < 2) {
-  console.error("Usage: node scripts/build.mjs page.json analysis.json [--html report.html] [--md page-prompts.md] [--json page-prompts.json]");
+  console.error("Usage: node scripts/build.mjs page.json analysis.md [--html report.html] [--md page-prompts.md] [--json page-prompts.json]");
   process.exit(1);
 }
 
@@ -62,7 +62,7 @@ writeFileSync(md, buildMarkdown({ page, analysis }));
 writeFileSync(json, JSON.stringify(buildJson({ page, analysis }), null, 2));
 console.log(`checks: ${CHECK_IDS.length} of ${CHECK_IDS.length} passed`);
 if (checks.warnings.length) {
-  console.log(`examples: ${checks.warnings.length} element(s) off their range (marked in the report; nothing to fix unless you want to):`);
+  console.log(`examples: ${checks.warnings.length} element(s) off their range (marked in the report; no fix needed):`);
   for (const w of checks.warnings.slice(0, 12)) console.log(`  - ${w}`);
 }
 console.log(`report.html: ${html}`);
