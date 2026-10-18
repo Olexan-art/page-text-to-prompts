@@ -1,6 +1,6 @@
 // page-prompts.md (for people) and page-prompts.json (for agents).
 
-import { COPY, plural, reportLang } from "./copy.mjs";
+import { COPY, plural } from "./copy.mjs";
 import { measureBlock } from "./measure.mjs";
 import { VERSION } from "./version.mjs";
 
@@ -30,7 +30,8 @@ export function buildJson({ page, analysis }) {
 }
 
 export function buildMarkdown({ page, analysis }) {
-  const lang = reportLang(analysis.language);
+  // Markdown is English by default, like the report; the agent's own text stays in its language.
+  const lang = "en";
   const L = COPY[lang];
   const rng = (r, forms) => `${r[0] === r[1] ? r[0] : `${r[0]}–${r[1]}`} ${plural(r[1], forms, lang)}`;
   const host = (() => {

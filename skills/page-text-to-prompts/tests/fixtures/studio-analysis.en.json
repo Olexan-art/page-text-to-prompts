@@ -1,0 +1,236 @@
+{
+  "language": "en",
+  "example_product": "a fictional booking app for small pilates studios",
+  "profile": {
+    "page_type": "SaaS landing",
+    "audience": "Owners and front-desk staff of small studios who take bookings through chat apps and spreadsheets.",
+    "awareness": "comparing_solutions",
+    "tone": { "adjectives": ["businesslike", "warm", "unpretentious"], "formality": 2, "address": "second person, plain" },
+    "main_promise": "{product} gives {audience} {main_benefit} without {pain}.",
+    "skeleton": ["hero", "social_proof_logos", "problem", "features", "how_it_works", "testimonials", "pricing", "faq", "cta"],
+    "persuasion_logic": "The result and the first step come first, then proof that similar studios already use it. Pains and features come in matching pairs, and the steps sit before the prices, so the price is read by people already convinced that starting is easy.",
+    "threads": [
+      "The promise of no more phone calls returns in the hero, in the steps and in the closing call.",
+      "The hero and closing buttons use the same words, and a risk line sits under every button."
+    ]
+  },
+  "variables": {
+    "product": { "means": "the product's name and what it is, in a few words", "fact": false },
+    "audience": { "means": "who reads the page: role and situation", "fact": false },
+    "pain": { "means": "the reader's main problem", "fact": false },
+    "pain_n": { "means": "further problems, numbered", "fact": false },
+    "main_benefit": { "means": "the main result the reader gets", "fact": false },
+    "feature_n": { "means": "what the product does, numbered", "fact": false },
+    "step_n": { "means": "steps to start, numbered", "fact": false },
+    "objection_n": { "means": "a doubt the reader has, numbered", "fact": false },
+    "cta_action": { "means": "the action the button asks for", "fact": false },
+    "risk_remover": { "means": "what makes the first step safe", "fact": true },
+    "customer_count": { "means": "how many customers", "fact": true },
+    "customer_n": { "means": "a named customer", "fact": true },
+    "testimonial_n": { "means": "a real quote with name and role", "fact": true },
+    "plan_n": { "means": "a plan's name, price and contents", "fact": true }
+  },
+  "dropped": [],
+  "blocks": [
+    {
+      "id": "p01", "source_blocks": ["b01"], "block_type": "hero", "name": "Hero",
+      "role": "Say within five seconds what changes for the reader, and offer the first step.",
+      "structure": [
+        { "element": "eyebrow", "label": "Eyebrow", "words": [3, 5], "chars": [15, 35], "must": "the main change for the reader" },
+        { "element": "h1", "label": "Headline", "words": [7, 11], "chars": [35, 60], "must": "the result for {audience}, without the product's name" },
+        { "element": "subheadline", "label": "Subheadline", "words": [13, 19], "chars": [70, 115], "must": "how {product} delivers {main_benefit}: three parts separated by commas" },
+        { "element": "button", "label": "Button", "words": [2, 4], "chars": [10, 24], "must": "verb + object, the action {cta_action}" },
+        { "element": "risk_line", "label": "Line under the button", "words": [5, 8], "chars": [25, 50], "must": "{risk_remover}", "fact": true }
+      ],
+      "techniques": ["Keep {product}'s name out of the headline; it first appears in the subheadline.", "Build the headline from two short statements joined by a comma: what the reader does and what the product does.", "List three parts in the subheadline, separated by commas, and explain none of them."],
+      "tone": { "adjectives": ["businesslike", "warm"], "formality": 2, "address": "you" },
+      "avoids": ["\"innovative\"", "a question as the headline", "exclamation marks"],
+      "prompt": "Write a hero block for {product}, aimed at {audience}. Write in English.\n\nJob of the block: say within five seconds what changes for the reader, and offer the first step.\n\nStructure:\n- Eyebrow: 3–5 words, 15–35 characters; the main change for the reader.\n- Headline: 7–11 words, 35–60 characters; the result for {audience}, without the product's name.\n- Subheadline: 13–19 words, 70–115 characters; how {product} delivers {main_benefit}, three parts separated by commas.\n- Button: 2–4 words; verb + object, the action {cta_action}.\n- Line under the button: 5–8 words; {risk_remover}.\n\nTechniques:\n- Keep {product}'s name out of the headline; it first appears in the subheadline.\n- Build the headline from two short statements joined by a comma.\n\nTone: businesslike, warm, unpretentious; address the reader as you.\nAvoid: \"innovative\", a question as the headline, exclamation marks.\nFacts: use {risk_remover} only if it is provided. If it is not, drop the line under the button. Never invent numbers, clients or guarantees.",
+      "example": [
+        { "element": "eyebrow", "text": "No more booking calls" },
+        { "element": "h1", "text": "Clients reserve a reformer, and you stay with the class" },
+        { "element": "subheadline", "text": "Timetable, payments and reminders behind a single link that lives in your studio's bio." },
+        { "element": "button", "text": "Set up bookings" },
+        { "element": "risk_line", "text": "Free to start, cancel at any time" }
+      ],
+      "filled_prompt": null
+    },
+    {
+      "id": "p02", "source_blocks": ["b02"], "block_type": "social_proof_logos", "name": "Who already uses it",
+      "role": "Show that studios like the reader's are already here, before any explanation.",
+      "structure": [
+        { "element": "line", "label": "Line", "words": [7, 12], "chars": [40, 75], "must": "how many and who: {customer_count}", "fact": true },
+        { "element": "logos", "label": "Logo", "count": 6, "children": [ { "element": "name", "label": "Customer name", "words": [1, 2], "chars": [3, 16], "must": "{customer_n}", "fact": true } ] }
+      ],
+      "techniques": ["State the number and the kind of customers in one line, with no praise.", "Show customers the reader's size, not the biggest names."],
+      "tone": { "adjectives": ["restrained"], "formality": 2, "address": "impersonal" },
+      "avoids": ["\"leading companies\""],
+      "prompt": "Write a social proof line for {product}, aimed at {audience}. Write in English.\n\nJob of the block: show that studios like the reader's are already here, before any explanation.\n\nStructure:\n- Line: 7–12 words; how many and who: {customer_count}.\n- 6 × customer name: 1–2 words; {customer_n}.\n\nFacts: use {customer_count} and {customer_n} only if they are provided. Never invent customers.",
+      "example": [
+        { "element": "line", "text": "Over two hundred pilates rooms now take every reservation this way" },
+        { "element": "logos", "items": [[{ "element": "name", "text": "Core" }], [{ "element": "name", "text": "Poise" }], [{ "element": "name", "text": "Spine Lab" }], [{ "element": "name", "text": "Reformer Co" }], [{ "element": "name", "text": "Breathe" }], [{ "element": "name", "text": "Centre" }]] }
+      ],
+      "filled_prompt": null
+    },
+    {
+      "id": "p03", "source_blocks": ["b03"], "block_type": "problem", "name": "The problem",
+      "role": "Let the reader recognise their own working day of manual bookings.",
+      "structure": [
+        { "element": "h2", "label": "Headline", "words": [5, 8], "chars": [25, 50], "must": "{pain} in the reader's words" },
+        { "element": "pains", "label": "Pain", "count": 3, "children": [ { "element": "h3", "label": "Title", "words": [2, 4], "chars": [10, 28], "must": "a scene from the working day ({pain_n})" }, { "element": "p", "label": "Description", "words": [15, 21], "chars": [80, 125], "must": "what happens and how it ends" } ] }
+      ],
+      "techniques": ["Describe every pain as a concrete scene from the working day, not as an abstract problem.", "Do not mention the product in this block.", "End the last pain with lost clients, money or time."],
+      "tone": { "adjectives": ["sympathetic", "concrete"], "formality": 2, "address": "you" },
+      "avoids": ["the word \"problem\" in the headline"],
+      "prompt": "Write a problem block for {product}, aimed at {audience}. Write in English.\n\nJob of the block: let the reader recognise their own working day of manual bookings.\n\nStructure:\n- Headline: 5–8 words; {pain} in the reader's words.\n- 3 × pain:\n  - Title: 2–4 words; a scene from the working day ({pain_n}).\n  - Description: 15–21 words, 80–125 characters; what happens and how it ends.\n\nTechniques:\n- Describe every pain as a concrete scene from the working day.\n- Do not mention the product in this block.\n\nTone: sympathetic, concrete; address the reader as you.",
+      "example": [
+        { "element": "h2", "text": "A booking system made of chat threads" },
+        { "element": "pains", "items": [
+          [{ "element": "h3", "text": "Calls mid-session" }, { "element": "p", "text": "The phone rings during a reformer session while the room waits for you to settle somebody's slot for Thursday." }],
+          [{ "element": "h3", "text": "An outdated sheet" }, { "element": "p", "text": "A client cancels by text, the sheet still shows the machine as booked, and a newcomer picks another studio." }],
+          [{ "element": "h3", "text": "Idle machines" }, { "element": "p", "text": "Clients miss sessions because every reminder is typed by hand, whenever you happen to find a quiet moment." }]
+        ] }
+      ],
+      "filled_prompt": null
+    },
+    {
+      "id": "p04", "source_blocks": ["b04"], "block_type": "features", "name": "Features",
+      "role": "Show that the product removes each pain from the previous block.",
+      "structure": [
+        { "element": "h2", "label": "Headline", "words": [5, 8], "chars": [25, 50], "must": "what leaves the reader's hands" },
+        { "element": "cards", "label": "Card", "count": 3, "children": [ { "element": "h3", "label": "Title", "words": [2, 3], "chars": [10, 24], "must": "a noun ({feature_n})" }, { "element": "p", "label": "Description", "words": [15, 22], "chars": [85, 135], "must": "what changes for the reader" } ] }
+      ],
+      "techniques": ["Each card answers one pain from the previous block, in the same order.", "Name each card with a noun; let the description say what changes for the reader."],
+      "tone": { "adjectives": ["businesslike", "confident"], "formality": 2, "address": "you" },
+      "avoids": ["a list of technical functions"],
+      "prompt": "Write a features block for {product}, aimed at {audience}. Write in English.\n\nJob of the block: show that the product removes each pain from the previous block.\n\nStructure:\n- Headline: 5–8 words; what leaves the reader's hands.\n- 3 × card:\n  - Title: 2–3 words; a noun ({feature_n}).\n  - Description: 15–22 words, 85–135 characters; what changes for the reader.\n\nTechniques:\n- Each card answers one pain from the previous block, in the same order.\n\nTone: businesslike, confident; address the reader as you.",
+      "example": [
+        { "element": "h2", "text": "The admin that used to be manual" },
+        { "element": "cards", "items": [
+          [{ "element": "h3", "text": "Self-service reservations" }, { "element": "p", "text": "Clients see which machines are free and reserve one themselves, even while you coach with the phone face down." }],
+          [{ "element": "h3", "text": "Live timetable" }, { "element": "p", "text": "A cancellation releases the machine instantly and the next client can take it, without a single message from you." }],
+          [{ "element": "h3", "text": "Reminders on autopilot" }, { "element": "p", "text": "The day before, each client gets a nudge and can confirm attendance or release the spot with one tap." }]
+        ] }
+      ],
+      "filled_prompt": null
+    },
+    {
+      "id": "p05", "source_blocks": ["b05"], "block_type": "how_it_works", "name": "How it works",
+      "role": "Convince the reader that starting is easy, before the price comes up.",
+      "structure": [
+        { "element": "h2", "label": "Headline", "words": [5, 8], "chars": [25, 45], "must": "the path from start to the first result" },
+        { "element": "steps", "label": "Step", "count": 3, "children": [ { "element": "h3", "label": "Title", "words": [2, 4], "chars": [10, 26], "must": "an imperative verb ({step_n})" }, { "element": "p", "label": "Description", "words": [14, 20], "chars": [70, 115], "must": "what the reader has after this step" } ] },
+        { "element": "link", "label": "Link", "words": [3, 5], "chars": [14, 32], "must": "see {product} without signing up" }
+      ],
+      "techniques": ["Start every step with an imperative verb.", "In each description, write the reader's result, not an action in the interface.", "End the last step with the reader back at their own work, not at the product."],
+      "tone": { "adjectives": ["simple", "confident"], "formality": 2, "address": "you" },
+      "avoids": ["technical terms", "more than three steps"],
+      "prompt": "Write a \"how it works\" block for {product}, aimed at {audience}. Write in English.\n\nJob of the block: convince the reader that starting is easy, before the price comes up.\n\nStructure:\n- Headline: 5–8 words; the path from start to the first result.\n- 3 × step:\n  - Title: 2–4 words; an imperative verb ({step_n}).\n  - Description: 14–20 words, 70–115 characters; what the reader has after this step.\n- Link: 3–5 words; see {product} without signing up.\n\nTechniques:\n- Start every step with an imperative verb.\n- In each description, write the reader's result, not an action in the interface.\n\nTone: simple, confident; address the reader as you.",
+      "example": [
+        { "element": "h2", "text": "Live bookings in one evening" },
+        { "element": "steps", "items": [
+          [{ "element": "h3", "text": "Enter your sessions" }, { "element": "p", "text": "Pick times, machines and instructors once, and the coming weeks fill in from that single setup." }],
+          [{ "element": "h3", "text": "Post the link" }, { "element": "p", "text": "Drop it into your bio and clients reserve open machines without ringing you even once." }],
+          [{ "element": "h3", "text": "Coach your sessions" }, { "element": "p", "text": "Reminders and payments take care of themselves, and you know every session's numbers ahead of time." }]
+        ] },
+        { "element": "link", "text": "Browse a sample timetable" }
+      ],
+      "filled_prompt": null
+    },
+    {
+      "id": "p06", "source_blocks": ["b06"], "block_type": "testimonials", "name": "Testimonials",
+      "role": "Let the reader hear people in the same situation as theirs.",
+      "structure": [
+        { "element": "h2", "label": "Headline", "words": [3, 6], "chars": [15, 35], "must": "a plain title, no wordplay" },
+        { "element": "quotes", "label": "Quote", "count": 3, "children": [ { "element": "quote", "label": "Quote", "words": [18, 30], "chars": [100, 175], "must": "{testimonial_n}: the change, before and after", "fact": true }, { "element": "who", "label": "Who", "words": [3, 8], "chars": [15, 50], "must": "name, role and kind of studio", "fact": true } ] }
+      ],
+      "techniques": ["Each quote names one concrete change: how it was and how it is.", "Take quotes from different roles: an owner, a front-desk person, an instructor."],
+      "tone": { "adjectives": ["lively", "conversational"], "formality": 1, "address": "first person" },
+      "avoids": ["quotes without a name", "general praise"],
+      "prompt": "Write a testimonials block for {product}, aimed at {audience}. Write in English.\n\nJob of the block: let the reader hear people in the same situation as theirs.\n\nStructure:\n- Headline: 3–6 words; a plain title, no wordplay.\n- 3 × quote:\n  - Quote: 18–30 words; {testimonial_n}: the change, before and after.\n  - Who: 3–8 words; name, role and kind of studio.\n\nFacts: use only real {testimonial_n}, with the author's permission. Never invent quotes, names or roles.",
+      "example": [
+        { "element": "h2", "text": "Heard from studio owners" },
+        { "element": "quotes", "items": [
+          [{ "element": "quote", "text": "My evenings went on replying to reservation texts. These days I glance at the timetable over coffee and already know who is coming in." }, { "element": "who", "text": "Name, owner of a three-machine studio" }],
+          [{ "element": "quote", "text": "Cancellations stopped disappearing into chat threads. Spots free up automatically, and last week not one reformer stood empty." }, { "element": "who", "text": "Name, studio front desk" }],
+          [{ "element": "quote", "text": "I coach across two studios and can finally see every session in one view, with the headcount next to each." }, { "element": "who", "text": "Name, pilates instructor" }]
+        ] }
+      ],
+      "filled_prompt": null
+    },
+    {
+      "id": "p07", "source_blocks": ["b07"], "block_type": "pricing", "name": "Pricing",
+      "role": "Help the reader choose a plan and see that the price matches the studio's size.",
+      "structure": [
+        { "element": "h2", "label": "Headline", "words": [4, 8], "chars": [20, 45], "must": "the price tied to the reader's size" },
+        { "element": "toggle", "label": "Toggle", "words": [2, 3], "chars": [10, 24], "must": "monthly or yearly" },
+        { "element": "plans", "label": "Plan", "count": 3, "children": [
+          { "element": "h3", "label": "Name", "words": [1, 3], "chars": [5, 20], "must": "the studio's size", "fact": true },
+          { "element": "price", "label": "Price", "words": [1, 3], "chars": [5, 20], "must": "{plan_n}", "fact": true },
+          { "element": "for_whom", "label": "Who it is for", "words": [8, 14], "chars": [40, 80], "must": "who picks this plan" },
+          { "element": "features", "label": "Bullets", "items": [3, 3], "words": [2, 6], "chars": [8, 40], "must": "what is included, most important first" },
+          { "element": "button", "label": "Button", "words": [2, 4], "chars": [8, 24], "must": "its own action for each plan" }
+        ] },
+        { "element": "risk_line", "label": "Line under the prices", "words": [6, 10], "chars": [30, 60], "must": "{risk_remover}", "fact": true }
+      ],
+      "techniques": ["Name the plans after the studio's size, not after levels such as basic or pro.", "Open every plan with who it is for, and only then say what is included.", "Put one line under the prices that removes the risk."],
+      "tone": { "adjectives": ["transparent", "calm"], "formality": 2, "address": "impersonal" },
+      "avoids": ["asterisks and fine print"],
+      "prompt": "Write a pricing block for {product}, aimed at {audience}. Write in English.\n\nJob of the block: help the reader choose a plan and see that the price matches the studio's size.\n\nStructure:\n- Headline: 4–8 words; the price tied to the reader's size.\n- Toggle: monthly or yearly.\n- 3 × plan:\n  - Name: 1–3 words; the studio's size.\n  - Price: {plan_n}.\n  - Who it is for: 8–14 words; who picks this plan.\n  - 3 bullets of 2–6 words; what is included, most important first.\n  - Button: 2–4 words; its own action for each plan.\n- Line under the prices: 6–10 words; {risk_remover}.\n\nFacts: take prices and plan names only from {plan_n}. Never invent prices or discounts.",
+      "example": [
+        { "element": "h2", "text": "Pay for the size you are" },
+        { "element": "toggle", "text": "Monthly · Annually" },
+        { "element": "plans", "items": [
+          [{ "element": "h3", "text": "Single room" }, { "element": "price", "text": "[price] / mo" }, { "element": "for_whom", "text": "For a one-room studio with a handful of instructors" }, { "element": "features", "list": ["Self-service reservations", "Client reminders", "Card checkout"] }, { "element": "button", "text": "Start here" }],
+          [{ "element": "h3", "text": "Multi-room" }, { "element": "price", "text": "[price] / mo" }, { "element": "for_whom", "text": "Built for two or three rooms with a person on the front desk" }, { "element": "features", "list": ["All of Single room", "Front-desk permissions", "Attendance report"] }, { "element": "button", "text": "Pick this plan" }],
+          [{ "element": "h3", "text": "Chain" }, { "element": "price", "text": "[price] / mo" }, { "element": "for_whom", "text": "For several locations under one name that share a client list" }, { "element": "features", "list": ["Every location, one login", "One shared client list", "A named account manager"] }, { "element": "button", "text": "Get in touch" }]
+        ] },
+        { "element": "risk_line", "text": "Free to start, cancel the plan at any time" }
+      ],
+      "filled_prompt": null
+    },
+    {
+      "id": "p08", "source_blocks": ["b08"], "block_type": "faq", "name": "FAQ",
+      "role": "Remove the last objections before the closing button: moving data, payments, cancellations.",
+      "structure": [
+        { "element": "h2", "label": "Headline", "words": [2, 4], "chars": [10, 30], "must": "a plain section name" },
+        { "element": "pairs", "label": "Pair", "count": 4, "children": [ { "element": "question", "label": "Question", "words": [5, 10], "chars": [25, 55], "must": "{objection_n} in the reader's words" }, { "element": "answer", "label": "Answer", "words": [22, 34], "chars": [120, 200], "must": "yes, no or an action, then what to do next" } ] }
+      ],
+      "techniques": ["Open the answer with a plain yes or no, or with the action the reader takes.", "Use the second sentence for what to do next or what happens after.", "Phrase questions the way the reader asks them, not the way the product names things."],
+      "tone": { "adjectives": ["calm", "concrete"], "formality": 2, "address": "you" },
+      "avoids": ["\"of course\"", "links to terms instead of an answer"],
+      "prompt": "Write an FAQ block for {product}, aimed at {audience}. Write in English.\n\nJob of the block: remove the last objections before the closing button.\n\nStructure:\n- Headline: 2–4 words; a plain section name.\n- 4 × pair:\n  - Question: 5–10 words; {objection_n} in the reader's words.\n  - Answer: 22–34 words, 120–200 characters; two sentences.\n\nTechniques:\n- Open the answer with a plain yes or no, or with the action the reader takes.\n- Use the second sentence for what to do next.\n\nTone: calm, concrete; address the reader as you.",
+      "example": [
+        { "element": "h2", "text": "Your questions" },
+        { "element": "pairs", "items": [
+          [{ "element": "question", "text": "Can I import my existing timetable?" }, { "element": "answer", "text": "Yes. Upload your current file and the sessions, instructors and machines show up in the timetable. Look them over once before the link goes public." }],
+          [{ "element": "question", "text": "How do clients pay for a session?" }, { "element": "answer", "text": "Clients pay by card when they reserve or in person at the studio, as you choose per session. Payments land in the studio's own account, never in ours." }],
+          [{ "element": "question", "text": "What if a client simply never turns up?" }, { "element": "answer", "text": "You decide a cancellation window, meaning how many hours ahead a spot can be released. After that it reopens for everyone else and the client is notified." }],
+          [{ "element": "question", "text": "Will my clients need to install anything?" }, { "element": "answer", "text": "No. Clients reserve from a web page and get reminders by message or email. There is nothing to download, for them or for your team." }]
+        ] }
+      ],
+      "filled_prompt": null
+    },
+    {
+      "id": "p09", "source_blocks": ["b09"], "block_type": "cta", "name": "Closing call",
+      "role": "Repeat the main promise and offer the last, simplest step.",
+      "structure": [
+        { "element": "h2", "label": "Headline", "words": [7, 12], "chars": [35, 60], "must": "the hero's promise in other words" },
+        { "element": "line", "label": "Line", "words": [12, 18], "chars": [60, 105], "must": "when the reader sees the result" },
+        { "element": "button", "label": "Button", "words": [2, 4], "chars": [10, 24], "must": "the same words as in the hero" },
+        { "element": "risk_line", "label": "Line under the button", "words": [5, 8], "chars": [25, 50], "must": "{risk_remover}", "fact": true }
+      ],
+      "techniques": ["Repeat the hero's promise in other words: the reader already knows the product.", "Make the button repeat the hero button word for word.", "Put the same risk line under it as at the top."],
+      "tone": { "adjectives": ["confident", "no pressure"], "formality": 2, "address": "you" },
+      "avoids": ["urgency without a reason"],
+      "prompt": "Write a closing call to action for {product}, aimed at {audience}. Write in English.\n\nJob of the block: repeat the main promise and offer the last, simplest step.\n\nStructure:\n- Headline: 7–12 words; the hero's promise in other words.\n- Line: 12–18 words; when the reader sees the result.\n- Button: 2–4 words; the same words as in the hero, the action {cta_action}.\n- Line under the button: 5–8 words; {risk_remover}.\n\nFacts: use {risk_remover} only if it is provided.",
+      "example": [
+        { "element": "h2", "text": "Leave the next reservation to the client, not to you" },
+        { "element": "line", "text": "Build the timetable this evening, and by tomorrow clients are reserving machines with no help from you." },
+        { "element": "button", "text": "Set up bookings" },
+        { "element": "risk_line", "text": "Free to start, cancel at any time" }
+      ],
+      "filled_prompt": null
+    }
+  ]
+}

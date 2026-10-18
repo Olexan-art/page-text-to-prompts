@@ -17,7 +17,8 @@ Three steps. Steps 1 and 3 are scripts. Step 2 is your judgement. Run every comm
 
 | Option | Default | Override when |
 |---|---|---|
-| Language of prompts, examples and report | the language the user writes in | the user names another |
+| Language of prompts and examples | the language the user writes in | the user names another |
+| Language of the report's frame | English, with an EN / UK switch in the header (`#lang=uk` opens it in Ukrainian) | never: both are always in the file |
 | Product and audience | none: prompts use variables, examples use one fictional product | the user names their product, or it is plain from the conversation or the project you work in |
 | Header and footer | skipped when they hold only navigation and contacts | they carry an offer |
 | Viewport | desktop 1440 × 900 | never: there is no mobile pass |
@@ -99,7 +100,7 @@ On `REFUSED analysis.json: …` fix every line it lists and run it again.
 
 ## Presenting the result
 
-- **The report first.** If this session can publish HTML pages, publish `report.html` and give the link; otherwise give its absolute path and offer to open it in the browser.
+- **The report first.** If this session can publish HTML pages, publish `report.html` and give the link; otherwise give its absolute path and offer to open it in the browser. It opens in English; tell a Ukrainian-speaking user about the UK switch (or add `#lang=uk` to the link).
 - In chat, briefly: how many blocks, the skeleton, one or two of the most useful techniques, and the visibility notes when they matter ("a fifth of the text appears only after JavaScript", "the FAQ answers are folded").
 - Do not paste every prompt into the chat. If the user asked about one block ("I want a pricing block like theirs"), show that block's prompt and example in full.
 - Say once that the blocks, prompts and examples are your reading of the page; the layers, counts and checks are the scripts'.

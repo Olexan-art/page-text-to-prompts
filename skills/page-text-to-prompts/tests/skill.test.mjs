@@ -143,3 +143,20 @@ test("the bundled reader carries no __name helper into the page scripts", () => 
   const dist = readFileSync(join(here, "..", "dist", "read.mjs"), "utf8");
   assert.equal(/__name\(/.test(dist), false, "keepNames must stay off in tools/build.mjs");
 });
+
+test("the English fixture analysis passes every check too", async () => {
+  const page = await studioPage();
+  const en = JSON.parse(fixture("studio-analysis.en.json"));
+  const checks = runChecks(en, page);
+  assert.equal(checks.ok, true, JSON.stringify(checks, null, 2));
+});
+
+test("the report carries both languages and opens in English", async () => {
+  const page = await studioPage();
+  const html = renderReport({ page, analysis: analysis(), checks: null });
+  assert.match(html, /<html lang="en" data-lang="en">/);
+  assert.ok(html.includes('data-set-lang="en"') && html.includes('data-set-lang="uk"'));
+  assert.ok(html.includes('<span class="l-en">Result</span>'));
+  assert.ok(html.includes('<span class="l-uk" lang="uk">Результат</span>'));
+  assert.ok(buildMarkdown({ page, analysis: analysis() }).includes("## Blocks and prompts"));
+});

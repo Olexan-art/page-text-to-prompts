@@ -1,6 +1,6 @@
 # Page text to prompts
 
-An Agent Skill from [GetLoopLoop](https://www.getlooploop.com) for Claude Code, claude.ai, Codex, opencode and other agents that load `SKILL.md` skills. Version **1.001**, private.
+An Agent Skill from [GetLoopLoop](https://www.getlooploop.com) for Claude Code, claude.ai, Codex, opencode and other agents that load `SKILL.md` skills. Version **1.002**.
 
 Give it a URL. It splits the page's copy into blocks (hero, benefits, how it works, testimonials, pricing, FAQ, CTA…) and, for every block, writes what the block does, how it is built (parts, order, words and characters per part, techniques, tone), a reusable prompt that writes the same kind of block for another product, and an example written from that prompt and measured against it. It copies the shape of the text, never the text: a script refuses any result that shares six words in a row with the page or names its brand.
 
@@ -32,6 +32,12 @@ The same report in the dark theme:
 
 ![The report, dark theme](docs/report-dark.png)
 
+The report opens in English and switches to Ukrainian with the EN / UK buttons in its header (or `#lang=uk` on the link); both languages are in the one file. The prompts and examples stay in the language the agent wrote them in, which by default is the user's. Here is the same page analysed in Ukrainian, with the frame switched to UK:
+
+![The report in Ukrainian](docs/report-uk.png)
+
+![A block, in Ukrainian](docs/report-block-uk.png)
+
 These screenshots are the test fixture (`tests/fixtures/studio.html`, a fictional studio) read from a saved file, so only the HTML layer appears; a live URL adds the render and accessibility layers.
 
 ## Install
@@ -62,5 +68,5 @@ skills/page-text-to-prompts/
   scripts/lib/              the layers, the checks, the report
   dist/                     the same scripts bundled with cheerio: no npm install
   tools/                    the bundler and the zip packer
-  tests/                    node:test suite and a fixture page with a passing analysis
+  tests/                    node:test suite, a fixture page and passing analyses in English and Ukrainian
 ```

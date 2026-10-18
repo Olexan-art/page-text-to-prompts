@@ -2,7 +2,7 @@
 // Everything is rendered here; the page's own script only switches the theme, copies prompts,
 // opens and closes blocks, shows the skeleton hints and the "how this is counted" notes.
 
-import { COPY, plural, reportLang } from "./copy.mjs";
+import { COPY, plural } from "./copy.mjs";
 import { CHECK_IDS, FACT_VARIABLES } from "./checks.mjs";
 import { measureBlock, measureLeaf } from "./measure.mjs";
 import { CORNER, MOTANKA, ORNAMENT } from "./sprites.mjs";
@@ -20,6 +20,7 @@ const FOOTER_LINKS = [
 const CSS = `
 :root{--bg:#f3f6fa;--bg-2:#eaf0f6;--panel:#fff;--panel-2:#f6f9fc;--line:#c3d0df;--line-soft:#d6dfea;--control:#6b7c91;--ink:#0b1626;--ink-2:#2c3c51;--muted:#46566b;--faint:#56677c;--accent:#0b6a85;--accent-ink:#fff;--accent-soft:rgba(11,106,133,.09);--amber:#9a4a06;--pink:#be185d;--violet:#6d28d9;--green:#047857;--deco:.2;--deco-filter:none;--deco-mark:.5;--sans:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;--mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;color-scheme:light}
 :root[data-theme="dark"]{--bg:#060b14;--bg-2:#08101d;--panel:#0a1424;--panel-2:#0d1a2e;--line:#24395a;--line-soft:#1b2b42;--control:#6b7f9b;--ink:#e6eef8;--ink-2:#c3d0de;--muted:#a3b3c7;--faint:#8b9cb2;--accent:#22d3ee;--accent-ink:#04121a;--accent-soft:rgba(34,211,238,.12);--amber:#f5a524;--pink:#f472b6;--violet:#a78bfa;--green:#34d399;--deco:.15;--deco-filter:brightness(2.6) saturate(.55);--deco-mark:.42;color-scheme:dark}
+:root:not([data-lang="uk"]) .l-uk{display:none!important}:root[data-lang="uk"] .l-en{display:none!important}
 *{box-sizing:border-box}html{background:var(--bg)}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 var(--sans);overflow-wrap:anywhere}a{color:var(--accent)}button{font:inherit;color:inherit}:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}code{font-family:var(--mono);font-size:.9em}
 .wrap{position:relative;max-width:1120px;margin:0 auto;padding:28px 16px 32px}
 .deco{height:26px;margin:10px 0 2px;background:url("${ORNAMENT}") center/contain no-repeat;opacity:var(--deco);filter:var(--deco-filter);pointer-events:none}.deco--foot{margin:30px 0 -14px}
@@ -77,10 +78,13 @@ const JS = `
 var root=document.documentElement;
 function sync(){var d=root.getAttribute("data-theme")==="dark";document.querySelectorAll("[data-set-theme]").forEach(function(b){b.setAttribute("aria-pressed",String((b.dataset.setTheme==="dark")===d))})}
 document.querySelectorAll("[data-set-theme]").forEach(function(b){b.addEventListener("click",function(){root.setAttribute("data-theme",b.dataset.setTheme);sync()})});
-if(location.hash==="#theme=dark")root.setAttribute("data-theme","dark");sync();
+function setLang(l){root.setAttribute("data-lang",l);root.setAttribute("lang",l);document.querySelectorAll("[data-set-lang]").forEach(function(b){b.setAttribute("aria-pressed",String(b.dataset.setLang===l))})}
+document.querySelectorAll("[data-set-lang]").forEach(function(b){b.addEventListener("click",function(){setLang(b.dataset.setLang)})});
+var h=location.hash;setLang(/lang=uk/.test(h)?"uk":"en");if(/theme=dark/.test(h))root.setAttribute("data-theme","dark");sync();
 var C=JSON.parse(document.getElementById("ptp-data").textContent);
-function copy(text,btn){var o=btn.textContent;function done(t){btn.textContent=t;setTimeout(function(){btn.textContent=o},1500)}
-try{navigator.clipboard.writeText(text).then(function(){done(C.copied)},function(){done(C.copyFailed)})}catch(e){done(C.copyFailed)}}
+function cur(){return root.getAttribute("data-lang")==="uk"?"uk":"en"}
+function copy(text,btn){var o=btn.innerHTML;function done(t){btn.textContent=t;setTimeout(function(){btn.innerHTML=o},1500)}
+try{navigator.clipboard.writeText(text).then(function(){done(C.copied[cur()])},function(){done(C.copyFailed[cur()])})}catch(e){done(C.copyFailed[cur()])}}
 document.addEventListener("click",function(e){var b=e.target.closest("[data-copy]");if(b){e.preventDefault();copy(C.prompts[+b.dataset.copy],b)}});
 var all=document.getElementById("copyAll");if(all)all.addEventListener("click",function(){copy(C.all,all)});
 var oa=document.getElementById("openAll"),ca=document.getElementById("closeAll");
@@ -105,15 +109,27 @@ function vars(text) {
   return esc(text).replace(/\{([a-z][a-z0-9_]*)\}/g, (_, v) => `<span class="${FACT_VARIABLES.includes(v) ? "vf" : "v"}">{${v}}</span>`);
 }
 
-export function renderReport({ page, analysis, checks }) {
-  const lang = reportLang(analysis.language);
-  const L = COPY[lang];
-  const tag = (kind) => `<span class="tag ${kind === "derived" ? "td" : kind === "judgement" ? "ta" : ""}">${esc(L[kind])}</span>`;
+const LANGS = ["en", "uk"];
+
+/**
+ * The frame's words in both languages at once; the page shows one and hides the other, English by
+ * default. `pick(L, lang)` returns plain text (escaped here) or, with raw, ready HTML.
+ */
+function both(pick, raw = false) {
+  return LANGS.map((lang) => `<span class="l-${lang}"${lang === "uk" ? ' lang="uk"' : ""}>${raw ? pick(COPY[lang], lang) : esc(pick(COPY[lang], lang))}</span>`).join("");
+}
+const t = (key) => both((L) => L[key]);
+const rng = (r, forms, lang) => `${r[0] === r[1] ? r[0] : `${r[0]}–${r[1]}`} ${plural(r[1], forms, lang)}`;
+
+export function renderReport({ page, analysis }) {
+  const tag = (kind) => `<span class="tag ${kind === "derived" ? "td" : kind === "judgement" ? "ta" : ""}">${t(kind)}</span>`;
   const help = (id) => {
-    const [title, kind, rows] = L.help[id];
-    return `<button class="q" type="button" aria-label="${esc(L.howCounted)}">?<span class="pop" role="dialog" hidden><b>${esc(title)} ${tag(kind)}</b><dl>${rows.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl></span></button>`;
+    const pop = LANGS.map((lang) => {
+      const [title, kind, rows] = COPY[lang].help[id];
+      return `<span class="l-${lang}"><b>${esc(title)} <span class="tag ${kind === "derived" ? "td" : kind === "judgement" ? "ta" : ""}">${esc(COPY[lang][kind])}</span></b><dl>${rows.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl></span>`;
+    }).join("");
+    return `<button class="q" type="button" aria-label="${esc(COPY.en.howCounted)}">?<span class="pop" role="dialog" hidden>${pop}</span></button>`;
   };
-  const rng = (r, forms) => `${r[0] === r[1] ? r[0] : `${r[0]}–${r[1]}`} ${plural(r[1], forms, lang)}`;
   const pct = (x) => Math.round(x * 100);
 
   const vis = page.visibility;
@@ -136,37 +152,43 @@ export function renderReport({ page, analysis, checks }) {
   const title = page.page.title || page.page.url || "Page";
   const out = [];
 
-  out.push(`<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">`);
+  out.push(`<!doctype html><html lang="en" data-lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">`);
   out.push(`<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:">`);
   out.push(`<title>${esc(title)} · page-text-to-prompts</title><style>${CSS}</style></head><body><main class="wrap">`);
 
-  // Header
-  out.push(`<div class="top"><span class="eyebrow">${esc(L.eyebrow)}</span><div class="toggles"><div class="seg" role="group" aria-label="${esc(L.themeGroup)}"><button type="button" data-set-theme="dark" aria-pressed="false">${esc(L.dark)}</button><button type="button" data-set-theme="light" aria-pressed="true">${esc(L.light)}</button></div></div></div>`);
+  // Header: the language and theme switches.
+  out.push(`<div class="top"><span class="eyebrow">${t("eyebrow")}</span><div class="toggles"><div class="seg" role="group" aria-label="${esc(COPY.en.langGroup)}"><button type="button" data-set-lang="en" aria-pressed="true">EN</button><button type="button" data-set-lang="uk" aria-pressed="false" lang="uk">UK</button></div><div class="seg" role="group" aria-label="${esc(COPY.en.themeGroup)}"><button type="button" data-set-theme="dark" aria-pressed="false">${t("dark")}</button><button type="button" data-set-theme="light" aria-pressed="true">${t("light")}</button></div></div></div>`);
   out.push('<div class="deco" aria-hidden="true"></div><div class="corner corner--tl" aria-hidden="true"></div>');
   out.push(`<h1>${esc(title)}</h1>`);
   if (page.page.url) out.push(`<a class="url" href="${esc(page.page.url)}" rel="noopener noreferrer" target="_blank">${esc(page.page.url)}</a>`);
-  out.push(`<div class="pills"><span class="pill"><b>${vis.totalWords}</b> ${esc(L.words)} ${tag("measured")}${help("words")}</span><span class="pill"><b>${blocks.length}</b> ${esc(L.blocks)} ${tag("judgement")}${help("blocks")}</span><span class="pill">${esc(L.lang)} <b>${esc(page.page.lang || "—")}</b> ${tag("measured")}</span><span class="pill">${esc(L.render)} <b>${esc(page.page.rendered ? L.yes : L.no)}</b> ${tag("measured")}</span></div>`);
+  out.push(`<div class="pills"><span class="pill"><b>${vis.totalWords}</b> ${t("words")} ${tag("measured")}${help("words")}</span><span class="pill"><b>${blocks.length}</b> ${t("blocks")} ${tag("judgement")}${help("blocks")}</span><span class="pill">${t("lang")} <b>${esc(page.page.lang || "—")}</b> ${tag("measured")}</span><span class="pill">${t("render")} <b>${t(page.page.rendered ? "yes" : "no")}</b> ${tag("measured")}</span></div>`);
 
   // Provenance
-  out.push(`<section class="info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 11v6M12 7.5v.01"/></svg><div><h3>${esc(L.infoSame)} ${tag("measured")}${tag("derived")}</h3><p>${esc(L.infoSameBody)}</p><h3>${esc(L.infoJudge)} ${tag("judgement")}</h3><p>${esc(L.infoJudgeBody)}</p><h3>${esc(L.infoForm)}</h3><p>${esc(L.infoFormBody)}</p></div></section>`);
+  out.push(`<section class="info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 11v6M12 7.5v.01"/></svg><div><h3>${t("infoSame")} ${tag("measured")}${tag("derived")}</h3><p>${t("infoSameBody")}</p><h3>${t("infoJudge")} ${tag("judgement")}</h3><p>${t("infoJudgeBody")}</p><h3>${t("infoForm")}</h3><p>${t("infoFormBody")}</p></div></section>`);
 
   // Result
-  const chip = (t, s) => `<span class="chip">${CHECK_SVG}${esc(t)}${s ? ` <span>${esc(s)}</span>` : ""}</span>`;
-  const chips = [chip(L.chipFetched), page.page.rendered ? chip(L.chipLayers, "html · render · a11y") : chip(L.chipHtmlOnly), chip(L.chipBlocks, `${blocks.length} ${L.chipOf} ${candidates} ${L.chipCandidates}`), chip(L.chipPrompts, String(blocks.length)), chip(L.chipChecks, `${CHECK_IDS.length} ${L.chipOf} ${CHECK_IDS.length}`)];
-  out.push(`<section class="panel"><div class="ph"><span class="lbl">${esc(L.result)}</span>${tag("measured")}${tag("judgement")}<span class="cap">${esc(L.resultCap)}</span></div><div class="chips">${chips.join("<i>→</i>")}</div>`);
-  out.push(`<p class="sub">${candidates} ${esc(L.subCandidates)} · ${(analysis.dropped || []).length} ${esc(L.subDropped)} · ${leafCount} ${esc(L.subElements)}</p>`);
+  const chip = (label, sub) => `<span class="chip">${CHECK_SVG}${label}${sub ? ` <span>${sub}</span>` : ""}</span>`;
+  const chips = [
+    chip(t("chipFetched")),
+    page.page.rendered ? chip(t("chipLayers"), "html · render · a11y") : chip(t("chipHtmlOnly")),
+    chip(t("chipBlocks"), both((L) => `${blocks.length} ${L.chipOf} ${candidates} ${L.chipCandidates}`)),
+    chip(t("chipPrompts"), String(blocks.length)),
+    chip(t("chipChecks"), both((L) => `${CHECK_IDS.length} ${L.chipOf} ${CHECK_IDS.length}`)),
+  ];
+  out.push(`<section class="panel"><div class="ph"><span class="lbl">${t("result")}</span>${tag("measured")}${tag("judgement")}<span class="cap">${t("resultCap")}</span></div><div class="chips">${chips.join("<i>→</i>")}</div>`);
+  out.push(`<p class="sub">${both((L) => `${candidates} ${L.subCandidates} · ${(analysis.dropped || []).length} ${L.subDropped} · ${leafCount} ${L.subElements}`)}</p>`);
   const js = pct(vis.jsOnlyShare);
-  out.push(`<div class="tiles"><div class="tile"><div class="big">${blocks.length}</div><p>${esc(L.tileBlocks)}</p><div class="meta">${tag("judgement")}${help("blocks")}</div></div><div class="tile${js > 10 ? " hot" : ""}"><div class="big">${js}<small>%</small></div><p>${esc(L.tileJs)}</p><div class="meta">${tag("measured")}${help("js")}</div></div><div class="tile"><div class="big">${pct(vis.collapsedShare)}<small>%</small></div><p>${esc(L.tileCollapsed)}</p><div class="meta">${tag("measured")}${help("col")}</div></div><div class="tile good"><div class="big">${fitCount}<small>/${leafCount}</small></div><p>${esc(L.tileFit)}</p><div class="meta">${tag("derived")}${help("fit")}</div></div><div class="tile good"><div class="big">0</div><p>${esc(L.tileOverlap)}</p><div class="meta">${tag("derived")}${help("overlap")}</div></div></div></section>`);
+  out.push(`<div class="tiles"><div class="tile"><div class="big">${blocks.length}</div><p>${t("tileBlocks")}</p><div class="meta">${tag("judgement")}${help("blocks")}</div></div><div class="tile${js > 10 ? " hot" : ""}"><div class="big">${js}<small>%</small></div><p>${t("tileJs")}</p><div class="meta">${tag("measured")}${help("js")}</div></div><div class="tile"><div class="big">${pct(vis.collapsedShare)}<small>%</small></div><p>${t("tileCollapsed")}</p><div class="meta">${tag("measured")}${help("col")}</div></div><div class="tile good"><div class="big">${fitCount}<small>/${leafCount}</small></div><p>${t("tileFit")}</p><div class="meta">${tag("derived")}${help("fit")}</div></div><div class="tile good"><div class="big">0</div><p>${t("tileOverlap")}</p><div class="meta">${tag("derived")}${help("overlap")}</div></div></div></section>`);
 
   // Skeleton
   const cells = blocks.map((b, i) => {
     const s = statusWords[i];
     const g = GROUP[b.block_type] || "other";
     const n = String(i + 1).padStart(2, "0");
-    const hintHtml = `<b>${n} · ${esc(b.name)}</b> <code>${esc(b.block_type)}</code> · ${total(s)} ${esc(L.words)}<br>${esc(b.role)}`;
+    const hintHtml = `<b>${n} · ${esc(b.name)}</b> <code>${esc(b.block_type)}</code> · ${total(s)} ${t("words")}<br>${esc(b.role)}`;
     return `<button type="button" class="cell g-${g}${s.collapsed ? " col" : ""}" style="--f:${Math.max(1, total(s))}" data-target="${esc(b.id)}" aria-label="${esc(b.name)}">${n}<template>${hintHtml}</template></button>`;
   });
-  out.push(`<section class="panel"><div class="ph"><h2>${esc(L.skeleton)}</h2>${tag("measured")}${tag("judgement")}<span class="cap">${esc(L.skeletonCap)}</span></div><div class="strip" id="strip">${cells.join("")}</div><div class="hint" id="hint">${esc(L.hint)}</div><div class="legend"><span class="g-hook"><i></i>${esc(L.gHook)}</span><span class="g-arg"><i></i>${esc(L.gArg)}</span><span class="g-proof"><i></i>${esc(L.gProof)}</span><span class="g-dec"><i></i>${esc(L.gDec)}</span><span class="g-other"><i></i>${esc(L.gOther)}</span><span><i class="col"></i>${esc(L.gFolded)}</span></div></section>`);
+  out.push(`<section class="panel"><div class="ph"><h2>${t("skeleton")}</h2>${tag("measured")}${tag("judgement")}<span class="cap">${t("skeletonCap")}</span></div><div class="strip" id="strip">${cells.join("")}</div><div class="hint" id="hint">${t("hint")}</div><div class="legend"><span class="g-hook"><i></i>${t("gHook")}</span><span class="g-arg"><i></i>${t("gArg")}</span><span class="g-proof"><i></i>${t("gProof")}</span><span class="g-dec"><i></i>${t("gDec")}</span><span class="g-other"><i></i>${t("gOther")}</span><span><i class="col"></i>${t("gFolded")}</span></div></section>`);
 
   // Who sees what
   const max = Math.max(1, ...statusWords.map(total));
@@ -174,29 +196,30 @@ export function renderReport({ page, analysis, checks }) {
     const s = statusWords[i];
     const seg = (k, cls) => (s[k] ? `<span class="${cls}" style="width:${(s[k] / max) * 100}%"></span>` : "");
     const note = s.js_only ? "js_only" : s.collapsed ? `${s.collapsed} collapsed` : s.not_in_a11y ? `${s.not_in_a11y} not_in_a11y` : "";
-    return `<div class="vrow"><span class="nm"><code>${String(i + 1).padStart(2, "0")}</code>${esc(b.name)}</span><span class="vbar">${seg("ok", "s-ok")}${seg("js_only", "s-js")}${seg("collapsed", "s-col")}${seg("not_in_a11y", "s-na")}</span><span class="val">${total(s)} ${esc(L.wordsShort)}<small>${esc(note)}</small></span></div>`;
+    return `<div class="vrow"><span class="nm"><code>${String(i + 1).padStart(2, "0")}</code>${esc(b.name)}</span><span class="vbar">${seg("ok", "s-ok")}${seg("js_only", "s-js")}${seg("collapsed", "s-col")}${seg("not_in_a11y", "s-na")}</span><span class="val">${total(s)} ${t("wordsShort")}<small>${esc(note)}</small></span></div>`;
   });
   const foldedBlocks = statusWords.filter((s) => s.js_only || s.collapsed).length;
   const f = page.page;
   const field = (k, v) => (v ? `<dt>${k}</dt><dd>${esc(v)}</dd><span class="n">${[...v].length}</span>` : "");
-  const excl = page.excluded.map((e) => `<li><span>${esc(L.reasons[e.reason] || e.reason)}</span><span>${e.words} ${esc(L.wordsShort)}</span></li>`).join("");
-  out.push(`<section class="panel"><div class="ph"><h2>${esc(L.who)}</h2>${tag("measured")}<span class="cap">${esc(L.whoCap)}</span></div><p class="vlead">${esc(page.page.rendered ? L.whoLead(js, foldedBlocks) : L.whoLeadHtml)}</p>${rows.join("")}<div class="legend"><span class="s-ok"><i></i>${esc(L.sOk)}</span><span class="s-js"><i></i>${esc(L.sJs)}</span><span class="s-col"><i></i>${esc(L.sCol)}</span><span class="s-na"><i></i>${esc(L.sNa)}</span></div>`);
-  out.push(`<div class="out2"><div class="box"><h3>${esc(L.outside)}</h3><dl class="kv">${field("title", f.title)}${field("meta", f.metaDescription)}${field("og", f.og?.title && f.og.title !== f.title ? f.og.title : null)}</dl></div><div class="box"><h3>${esc(L.notAnalysed)}</h3><ul class="xl">${excl}<li><span><code>a11y_only</code></span><span>${vis.a11yOnly.count} · ${esc(L.a11yOnly)}</span></li><li><span><code>hidden</code></span><span>${vis.hidden.count} · ${esc(L.hidden)}</span></li></ul></div></div></section>`);
+  const excl = page.excluded.map((e) => `<li><span>${both((L) => L.reasons[e.reason] || e.reason)}</span><span>${e.words} ${t("wordsShort")}</span></li>`).join("");
+  const lead = page.page.rendered ? both((L) => L.whoLead(js, foldedBlocks)) : t("whoLeadHtml");
+  out.push(`<section class="panel"><div class="ph"><h2>${t("who")}</h2>${tag("measured")}<span class="cap">${t("whoCap")}</span></div><p class="vlead">${lead}</p>${rows.join("")}<div class="legend"><span class="s-ok"><i></i>${t("sOk")}</span><span class="s-js"><i></i>${t("sJs")}</span><span class="s-col"><i></i>${t("sCol")}</span><span class="s-na"><i></i>${t("sNa")}</span></div>`);
+  out.push(`<div class="out2"><div class="box"><h3>${t("outside")}</h3><dl class="kv">${field("title", f.title)}${field("meta", f.metaDescription)}${field("og", f.og?.title && f.og.title !== f.title ? f.og.title : null)}</dl></div><div class="box"><h3>${t("notAnalysed")}</h3><ul class="xl">${excl}<li><span><code>a11y_only</code></span><span>${vis.a11yOnly.count} · ${t("a11yOnly")}</span></li><li><span><code>hidden</code></span><span>${vis.hidden.count} · ${t("hidden")}</span></li></ul></div></div></section>`);
 
-  // Profile
+  // Profile (the agent's words stay in the language the agent wrote them in)
   const p = analysis.profile;
   const tone = p.tone || {};
-  out.push(`<section class="panel"><div class="ph"><h2>${esc(L.profile)}</h2>${tag("judgement")}<span class="cap">${esc(L.profileCap)}</span></div><div class="out2" style="margin-top:0">`);
-  out.push(`<div class="box"><h3>${esc(L.pType)}</h3><p>${esc(p.page_type)}. ${esc(p.audience)}</p></div>`);
-  out.push(`<div class="box"><h3>${esc(L.pTone)}</h3><div class="tone-row"><span><b>${esc((tone.adjectives || []).join(", "))}</b></span>${tone.formality ? `<span>${esc(L.formality)} ${tone.formality} ${esc(L.of5)}</span>` : ""}${tone.address ? `<span>${esc(L.address)}: ${esc(tone.address)}</span>` : ""}</div></div>`);
-  out.push(`<div class="box wide"><h3>${esc(L.pAware)}</h3><div class="aware">${["unaware", "problem_aware", "comparing_solutions", "product_aware", "ready_to_buy"].map((a) => `<div${a === p.awareness ? ' class="on"' : ""}>${esc(L.aware[a])}</div>`).join("")}</div></div>`);
-  out.push(`<div class="box"><h3>${esc(L.pPromise)}</h3><p>${vars(p.main_promise)}</p></div><div class="box"><h3>${esc(L.pLogic)}</h3><p>${esc(p.persuasion_logic)}</p></div>`);
-  if ((p.threads || []).length) out.push(`<div class="box wide"><h3>${esc(L.pThreads)}</h3><ul class="threads">${p.threads.map((t) => `<li><span>${vars(t)}</span></li>`).join("")}</ul></div>`);
+  out.push(`<section class="panel"><div class="ph"><h2>${t("profile")}</h2>${tag("judgement")}<span class="cap">${t("profileCap")}</span></div><div class="out2" style="margin-top:0">`);
+  out.push(`<div class="box"><h3>${t("pType")}</h3><p>${esc(p.page_type)}. ${esc(p.audience)}</p></div>`);
+  out.push(`<div class="box"><h3>${t("pTone")}</h3><div class="tone-row"><span><b>${esc((tone.adjectives || []).join(", "))}</b></span>${tone.formality ? `<span>${both((L) => `${L.formality} ${tone.formality} ${L.of5}`)}</span>` : ""}${tone.address ? `<span>${t("address")}: ${esc(tone.address)}</span>` : ""}</div></div>`);
+  out.push(`<div class="box wide"><h3>${t("pAware")}</h3><div class="aware">${["unaware", "problem_aware", "comparing_solutions", "product_aware", "ready_to_buy"].map((a) => `<div${a === p.awareness ? ' class="on"' : ""}>${both((L) => L.aware[a])}</div>`).join("")}</div></div>`);
+  out.push(`<div class="box"><h3>${t("pPromise")}</h3><p>${vars(p.main_promise)}</p></div><div class="box"><h3>${t("pLogic")}</h3><p>${esc(p.persuasion_logic)}</p></div>`);
+  if ((p.threads || []).length) out.push(`<div class="box wide"><h3>${t("pThreads")}</h3><ul class="threads">${p.threads.map((x) => `<li>${vars(x)}</li>`).join("")}</ul></div>`);
   out.push("</div></section>");
 
   // Blocks
-  out.push(`<section class="panel"><div class="ph"><h2>${esc(L.blocksTitle)}</h2>${tag("judgement")}${tag("derived")}<span class="cap">${esc(L.blocksCap)}</span></div><div class="toolbar"><button class="btn" type="button" id="openAll">${esc(L.openAll)}</button><button class="btn" type="button" id="closeAll">${esc(L.closeAll)}</button><button class="btn" type="button" id="copyAll">${esc(L.copyAll)}</button></div>`);
-  blocks.forEach((b, i) => out.push(renderBlock(b, i, { L, lang, rng, measured: measured[i], status: statusWords[i], tag, total })));
+  out.push(`<section class="panel"><div class="ph"><h2>${t("blocksTitle")}</h2>${tag("judgement")}${tag("derived")}<span class="cap">${t("blocksCap")}</span></div><div class="toolbar"><button class="btn" type="button" id="openAll">${t("openAll")}</button><button class="btn" type="button" id="closeAll">${t("closeAll")}</button><button class="btn" type="button" id="copyAll">${t("copyAll")}</button></div>`);
+  blocks.forEach((b, i) => out.push(renderBlock(b, i, { measured: measured[i], status: statusWords[i], tag, total })));
   out.push("</section>");
 
   // Variables
@@ -208,45 +231,50 @@ export function renderReport({ page, analysis, checks }) {
       where.get(m[1]).add(b);
     }
   });
-  const varRows = Object.entries(analysis.variables || {}).map(([name, v]) => `<tr><th scope="row">{${esc(name)}}</th><td>${esc(v.means)}</td><td>${v.fact ? `<span class="badge fact-b">${esc(L.fact)}</span>` : "—"}</td><td><div class="path">${[...(where.get(name) || [])].map((b) => `<a href="#${esc(b.id)}">${esc(b.block_type)}</a>`).join("")}</div></td></tr>`);
-  out.push(`<section class="panel"><div class="ph"><h2>${esc(L.vars)}</h2>${tag("derived")}<span class="cap">${esc(L.varsCap)}</span></div><div class="tbl"><table><thead><tr><th scope="col">${esc(L.vName)}</th><th scope="col">${esc(L.vMeans)}</th><th scope="col">${esc(L.vFact)}</th><th scope="col">${esc(L.vWhere)}</th></tr></thead><tbody>${varRows.join("")}</tbody></table></div></section>`);
+  const varRows = Object.entries(analysis.variables || {}).map(([name, v]) => `<tr><th scope="row">{${esc(name)}}</th><td>${esc(v.means)}</td><td>${v.fact ? `<span class="badge fact-b">${t("fact")}</span>` : "—"}</td><td><div class="path">${[...(where.get(name) || [])].map((b) => `<a href="#${esc(b.id)}">${esc(b.block_type)}</a>`).join("")}</div></td></tr>`);
+  out.push(`<section class="panel"><div class="ph"><h2>${t("vars")}</h2>${tag("derived")}<span class="cap">${t("varsCap")}</span></div><div class="tbl"><table><thead><tr><th scope="col">${t("vName")}</th><th scope="col">${t("vMeans")}</th><th scope="col">${t("vFact")}</th><th scope="col">${t("vWhere")}</th></tr></thead><tbody>${varRows.join("")}</tbody></table></div></section>`);
 
-  // Checks
-  out.push(`<section class="panel"><div class="ph"><h2>${esc(L.checks)}</h2>${tag("derived")}<span class="cap">${esc(L.checksCap(CHECK_IDS.length))}</span></div><ul class="checks">${CHECK_IDS.map((id) => `<li>${CIRCLE_SVG}<b>${esc(L.check[id][0])}<code>${id}</code></b><span>${esc(L.check[id][1])}</span></li>`).join("")}</ul></section>`);
-  out.push(`<section class="panel"><div class="ph"><h2>${esc(L.files)}</h2><span class="cap">${esc(L.filesCap)}</span></div><div class="files"><span class="file">page-prompts.md <span>${esc(L.fileMd)}</span></span><span class="file">page-prompts.json <span>${esc(L.fileJson)}</span></span><span class="file">page.json <span>${esc(L.filePage)}</span></span></div></section>`);
+  // Checks and files
+  out.push(`<section class="panel"><div class="ph"><h2>${t("checks")}</h2>${tag("derived")}<span class="cap">${both((L) => L.checksCap(CHECK_IDS.length))}</span></div><ul class="checks">${CHECK_IDS.map((id) => `<li>${CIRCLE_SVG}<b>${both((L) => L.check[id][0])}<code>${id}</code></b><span>${both((L) => L.check[id][1])}</span></li>`).join("")}</ul></section>`);
+  out.push(`<section class="panel"><div class="ph"><h2>${t("files")}</h2><span class="cap">${t("filesCap")}</span></div><div class="files"><span class="file">page-prompts.md <span>${t("fileMd")}</span></span><span class="file">page-prompts.json <span>${t("fileJson")}</span></span><span class="file">page.json <span>${t("filePage")}</span></span></div></section>`);
 
   // Footer
-  const links = FOOTER_LINKS.map((l) => `<li><a href="${l.href}" rel="noopener noreferrer" target="_blank">${l.icon}<span>${esc(l.author ? `${l.name} · ${L.footerAuthor}` : l.name)}</span></a></li>`).join("");
-  out.push(`<div class="deco deco--foot" aria-hidden="true"></div><footer class="foot"><div class="foot-made"><img class="motanka" src="${MOTANKA}" alt="" width="30" height="39"><p>${esc(L.footer)} v${VERSION}</p></div><ul class="links">${links}</ul></footer><div class="corner corner--br" aria-hidden="true"></div>`);
+  const links = FOOTER_LINKS.map((l) => `<li><a href="${l.href}" rel="noopener noreferrer" target="_blank">${l.icon}<span>${l.author ? `${esc(l.name)} · ${t("footerAuthor")}` : esc(l.name)}</span></a></li>`).join("");
+  out.push(`<div class="deco deco--foot" aria-hidden="true"></div><footer class="foot"><div class="foot-made"><img class="motanka" src="${MOTANKA}" alt="" width="30" height="39"><p>${t("footer")} v${VERSION}</p></div><ul class="links">${links}</ul></footer><div class="corner corner--br" aria-hidden="true"></div>`);
 
-  const data = { copied: L.copied, copyFailed: L.copyFailed, prompts: blocks.map((b) => b.prompt), all: blocks.map((b, i) => `## ${String(i + 1).padStart(2, "0")}. ${b.name}\n\n${b.prompt}`).join("\n\n") };
+  const data = {
+    copied: { en: COPY.en.copied, uk: COPY.uk.copied },
+    copyFailed: { en: COPY.en.copyFailed, uk: COPY.uk.copyFailed },
+    prompts: blocks.map((b) => b.prompt),
+    all: blocks.map((b, i) => `## ${String(i + 1).padStart(2, "0")}. ${b.name}\n\n${b.prompt}`).join("\n\n"),
+  };
   out.push(`<script type="application/json" id="ptp-data">${JSON.stringify(data).replace(/</g, "\\u003c")}</script><script>${JS}</script></main></body></html>`);
   return out.join("\n");
 }
 
-function renderBlock(b, i, { L, lang, rng, measured, status, tag, total }) {
+function renderBlock(b, i, { measured, status, tag, total }) {
   const n = i + 1;
   const scale = Math.ceil(Math.max(1, ...(b.structure || []).flatMap((e) => (e.children ? e.children.map((c) => c.words[1]) : [e.words[1]]))) * 1.25);
   const leaves = measured.leaves;
   const leafFor = (path) => leaves.find((l) => l.path === path);
-  const vol = (spec) => (spec.items ? `${spec.items[0]}–${spec.items[1]} ${L.item} · ${L.each} ${rng(spec.words, L.w)}` : `${rng(spec.words, L.w)} · ${spec.chars[0]}–${spec.chars[1]}`);
+  const vol = (spec) => both((L, lang) => (spec.items ? `${spec.items[0]}–${spec.items[1]} ${L.item} · ${L.each} ${rng(spec.words, L.w, lang)}` : `${rng(spec.words, L.w, lang)} · ${spec.chars[0]}–${spec.chars[1]}`));
   const row = (spec, child, path) => {
     const a = (spec.words[0] / scale) * 100;
     const w = Math.max(1.5, ((spec.words[1] - spec.words[0]) / scale) * 100);
     const leaf = leafFor(path);
     const dot = leaf ? `<b class="${leaf.m.verdict === "in" ? "" : "warn"}" style="left:${Math.min(98, (leaf.m.words / scale) * 100)}%"></b>` : "";
-    return `<div class="row${child ? " child" : ""}"><span class="el">${esc(spec.label || spec.element)}<code>${esc(spec.element)}</code></span><span class="track"><i style="left:${a}%;width:${w}%"></i>${dot}</span><span class="vol">${esc(vol(spec))}</span><span class="must">${spec.fact ? `<span class="f">${esc(L.fact)} · </span>` : ""}${vars(spec.must || "")}</span></div>`;
+    return `<div class="row${child ? " child" : ""}"><span class="el">${esc(spec.label || spec.element)}<code>${esc(spec.element)}</code></span><span class="track"><i style="left:${a}%;width:${w}%"></i>${dot}</span><span class="vol">${vol(spec)}</span><span class="must">${spec.fact ? `<span class="f">${t("fact")} · </span>` : ""}${vars(spec.must || "")}</span></div>`;
   };
   const struct = (b.structure || [])
     .map((spec) => {
       if (spec.children) {
-        return `<div class="row group"><span class="el">${spec.count} × ${esc(spec.label || spec.element)}</span><span></span><span class="vol">${spec.count} ${esc(L.same)}</span></div>${spec.children.map((c) => row(c, true, `${b.id} › ${spec.element} 1 › ${c.element}`)).join("")}`;
+        return `<div class="row group"><span class="el">${spec.count} × ${esc(spec.label || spec.element)}</span><span></span><span class="vol">${spec.count} ${t("same")}</span></div>${spec.children.map((c) => row(c, true, `${b.id} › ${spec.element} 1 › ${c.element}`)).join("")}`;
       }
       return row(spec, false, `${b.id} › ${spec.element}`);
     })
     .join("");
 
-  const markOf = (v) => (v === "in" ? `<span class="ok">✓ ${esc(L.inRange)}</span>` : v === "near" ? `<span class="warn">≈ ${esc(L.nearRange)}</span>` : `<span class="warn">⚠ ${esc(L.outRange)}</span>`);
+  const markOf = (v) => (v === "in" ? `<span class="ok">✓ ${t("inRange")}</span>` : v === "near" ? `<span class="warn">≈ ${t("nearRange")}</span>` : `<span class="warn">⚠ ${t("outRange")}</span>`);
   const kind = (el) => {
     const e = String(el).toLowerCase();
     if (/eyebrow|kicker|overline/.test(e)) return "eyebrow";
@@ -262,10 +290,10 @@ function renderBlock(b, i, { L, lang, rng, measured, status, tag, total }) {
   };
   const exLeaf = (spec, value) => {
     const m = measureLeaf(spec, value);
-    const meta = spec.items ? `${m.count} ${L.item}` : `${m.words} ${L.wordsShort} · ${m.chars}`;
+    const meta = spec.items ? both((L) => `${m.count} ${L.item}`) : both((L) => `${m.words} ${L.wordsShort} · ${m.chars}`);
     const k = kind(spec.element);
-    const body = spec.items ? `<ul class="e-list">${(value || []).map((t) => `<li>${esc(t)}</li>`).join("")}</ul>` : k === "btn" ? `<span class="e-btn">${esc(value)}</span>` : k === "link" ? `<span class="e-link">${esc(value)} →</span>` : `<div class="e-${k}">${esc(value)}</div>`;
-    return `<div class="m${spec.fact ? " mf" : ""}"><div class="mt">${esc(spec.label || spec.element)} · ${esc(meta)} ${markOf(m.verdict)}${spec.fact ? ` <span class="fs">${esc(L.factSample)}</span>` : ""}</div>${body}</div>`;
+    const body = spec.items ? `<ul class="e-list">${(value || []).map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : k === "btn" ? `<span class="e-btn">${esc(value)}</span>` : k === "link" ? `<span class="e-link">${esc(value)} →</span>` : `<div class="e-${k}">${esc(value)}</div>`;
+    return `<div class="m${spec.fact ? " mf" : ""}"><div class="mt">${esc(spec.label || spec.element)} · ${meta} ${markOf(m.verdict)}${spec.fact ? ` <span class="fs">${t("factSample")}</span>` : ""}</div>${body}</div>`;
   };
   const example = (b.structure || [])
     .map((spec, j) => {
@@ -279,12 +307,12 @@ function renderBlock(b, i, { L, lang, rng, measured, status, tag, total }) {
   const src = (b.source_blocks || []).join(" + ");
   const badges = [status.ok ? '<span class="badge s-ok">ok</span>' : "", status.js_only ? '<span class="badge s-js">js_only</span>' : "", status.collapsed ? '<span class="badge s-col">collapsed</span>' : "", status.not_in_a11y ? '<span class="badge s-na">not_in_a11y</span>' : ""].join("");
   const tone = b.tone || {};
-  return `<details class="blk" id="${esc(b.id)}"${i < 2 ? " open" : ""}><summary><span class="nb">${n}</span><span class="ctype">${esc(b.block_type)}</span><span class="bname">${esc(b.name)}</span><span class="srcs">${esc(src)} · ${total(status)} ${esc(L.wordsShort)}</span>${badges}${CARET}</summary>
-<div class="bbody"><dl class="role"><dt>${esc(L.job)}</dt><dd>${esc(b.role)}</dd></dl>${status.collapsed ? `<p class="note col">${esc(L.foldedNote)}</p>` : ""}${status.js_only ? `<p class="note js">${esc(L.jsNote)}</p>` : ""}
-<div class="anat"><div><p class="label">${esc(L.structure)} ${tag("judgement")}</p><div class="struct">${struct}</div><p class="note" style="margin-top:6px;color:var(--faint);font-size:12.5px">${esc(L.structNote)}</p></div>
-<div style="display:flex;flex-direction:column;gap:14px;min-width:0"><div><p class="label">${esc(L.techniques)}</p><ul class="tech">${(b.techniques || []).map((t) => `<li><span>${vars(t)}</span></li>`).join("")}</ul></div>
-<div><p class="label">${esc(L.tone)}</p><div class="tone-row"><span><b>${esc((tone.adjectives || []).join(", "))}</b></span>${tone.address ? `<span>${esc(tone.address)}</span>` : ""}</div></div>
-${(b.avoids || []).length ? `<div><p class="label">${esc(L.avoids)}</p><div class="avoid">${b.avoids.map((a) => `<span>${esc(a)}</span>`).join("")}</div></div>` : ""}</div></div>
-<div class="pair"><div class="pbox"><div class="pbox-h"><h4>${esc(L.prompt)}</h4><button class="btn" type="button" data-copy="${i}">${esc(L.copy)}</button></div><pre>${vars(b.prompt)}</pre>${b.filled_prompt ? `<h4 style="margin:6px 0 0;font:700 12px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)">${esc(L.filled)}</h4><pre>${esc(b.filled_prompt)}</pre>` : ""}</div><div class="arr" aria-hidden="true">→</div>
-<div class="pbox ex"><div class="pbox-h"><h4>${esc(L.example)}</h4><span class="mt">${esc(L.fictional)}</span></div><div class="exs">${example}</div><div class="exfoot"><span>${esc(L.fitOf(fit, leaves.length))}</span><span><b>${esc(L.noOverlap)}</b></span></div></div></div></div></details>`;
+  return `<details class="blk" id="${esc(b.id)}"${i < 2 ? " open" : ""}><summary><span class="nb">${n}</span><span class="ctype">${esc(b.block_type)}</span><span class="bname">${esc(b.name)}</span><span class="srcs">${esc(src)} · ${total(status)} ${t("wordsShort")}</span>${badges}${CARET}</summary>
+<div class="bbody"><dl class="role"><dt>${t("job")}</dt><dd>${esc(b.role)}</dd></dl>${status.collapsed ? `<p class="note col">${t("foldedNote")}</p>` : ""}${status.js_only ? `<p class="note js">${t("jsNote")}</p>` : ""}
+<div class="anat"><div><p class="label">${t("structure")} ${tag("judgement")}</p><div class="struct">${struct}</div><p class="note" style="margin-top:6px;color:var(--faint);font-size:12.5px">${t("structNote")}</p></div>
+<div style="display:flex;flex-direction:column;gap:14px;min-width:0"><div><p class="label">${t("techniques")}</p><ul class="tech">${(b.techniques || []).map((x) => `<li><span>${vars(x)}</span></li>`).join("")}</ul></div>
+<div><p class="label">${t("tone")}</p><div class="tone-row"><span><b>${esc((tone.adjectives || []).join(", "))}</b></span>${tone.address ? `<span>${esc(tone.address)}</span>` : ""}</div></div>
+${(b.avoids || []).length ? `<div><p class="label">${t("avoids")}</p><div class="avoid">${b.avoids.map((a) => `<span>${esc(a)}</span>`).join("")}</div></div>` : ""}</div></div>
+<div class="pair"><div class="pbox"><div class="pbox-h"><h4>${t("prompt")}</h4><button class="btn" type="button" data-copy="${i}">${t("copy")}</button></div><pre>${vars(b.prompt)}</pre>${b.filled_prompt ? `<h4 style="margin:6px 0 0;font:700 12px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)">${t("filled")}</h4><pre>${esc(b.filled_prompt)}</pre>` : ""}</div><div class="arr" aria-hidden="true">→</div>
+<div class="pbox ex"><div class="pbox-h"><h4>${t("example")}</h4><span class="mt">${t("fictional")}</span></div><div class="exs">${example}</div><div class="exfoot"><span>${both((L) => L.fitOf(fit, leaves.length))}</span><span><b>${t("noOverlap")}</b></span></div></div></div></div></details>`;
 }
