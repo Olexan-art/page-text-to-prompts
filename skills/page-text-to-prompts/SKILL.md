@@ -3,7 +3,7 @@ name: page-text-to-prompts
 description: Splits the copy of a web page into blocks (hero, benefits, how it works, testimonials, pricing, FAQ, CTA and others) and writes 1 reusable prompt per block. Each prompt writes the same kind of text for a different product and has an example checked against it. Copy only; the design is ignored. Use when the user gives a URL and asks to break down or reverse-engineer the copy of a landing page, make prompts per section, write a similar block for their site, or see how a competitor's page is written.
 ---
 
-Version 1.007.
+Version 1.008.
 
 # Page text to prompts
 
