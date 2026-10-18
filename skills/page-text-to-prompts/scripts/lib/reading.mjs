@@ -12,9 +12,23 @@ import { a11yOnlyNames, classifyUnits, segment, visibilitySummary } from "./laye
 import { VERSION } from "./version.mjs";
 
 const SCHEMA = "page-text-to-prompts/page@1";
+/** The whole render, launch to close: past this, the reading goes on from the HTML alone. */
+export const RENDER_DEADLINE_MS = 45_000;
+const say = (msg) => process.stderr.write(`${msg}
+`);
 
 /** Render the page and read its accessibility tree. Returns { ok, units, sections, a11yKey, a11yNames, finalUrl, browser } or { ok:false, reason }. */
-export async function renderLayers(url, { browserPath = findBrowser() } = {}) {
+export async function renderLayers(url, opts = {}) {
+  let timer;
+  const deadline = new Promise((resolve) => {
+    timer = setTimeout(() => resolve({ ok: false, reason: "render_timeout" }), RENDER_DEADLINE_MS);
+  });
+  const result = await Promise.race([renderInner(url, opts), deadline]);
+  clearTimeout(timer);
+  return result;
+}
+
+async function renderInner(url, { browserPath = findBrowser() } = {}) {
   let handle;
   try {
     handle = await openBrowser(browserPath);
@@ -22,11 +36,15 @@ export async function renderLayers(url, { browserPath = findBrowser() } = {}) {
     return { ok: false, reason: error.reason || "launch_failed" };
   }
   const { session } = handle;
+  // The deadline may win the race; the browser is closed either way.
+  const closeLater = setTimeout(() => handle.close(), RENDER_DEADLINE_MS + 1_000);
   try {
+    say(`rendering in ${handle.browser.split(/[\/]/).pop()}…`);
     const finalUrl = await loadAndSettle(session, url);
-    await session.evaluate(asExpression(scrollThrough), 60_000);
-    const opened = await session.evaluate(asExpression(expandDisclosures), 30_000);
-    const collected = await session.evaluate(asExpression(collectUnits), 60_000);
+    await session.evaluate(asExpression(scrollThrough), 25_000);
+    const opened = await session.evaluate(asExpression(expandDisclosures), 10_000);
+    const collected = await session.evaluate(asExpression(collectUnits), 20_000);
+    say("reading the accessibility tree…");
 
     await session.send("Accessibility.enable");
     const { nodes } = await session.send("Accessibility.getFullAXTree", {}, 60_000);
@@ -53,6 +71,7 @@ export async function renderLayers(url, { browserPath = findBrowser() } = {}) {
   } catch (error) {
     return { ok: false, reason: "render_failed", detail: error.message };
   } finally {
+    clearTimeout(closeLater);
     await handle.close();
   }
 }
@@ -81,6 +100,7 @@ export async function readPage(input, { render = true, browserPath } = {}) {
   if (fromFile) {
     html = input.html;
   } else {
+    say(`fetching ${url}…`);
     const fetched = await fetchPublicPage(url);
     if (!fetched.ok) return { ok: false, reasonCode: fetched.reason === "blocked" ? "http_error" : fetched.reason, status: fetched.status };
     html = fetched.html;

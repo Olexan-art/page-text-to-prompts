@@ -1,6 +1,6 @@
 # Page text to prompts
 
-An Agent Skill from [GetLoopLoop](https://www.getlooploop.com) for Claude Code, claude.ai, Codex, opencode and other agents that load `SKILL.md` skills. Version **1.003**.
+An Agent Skill from [GetLoopLoop](https://www.getlooploop.com) for Claude Code, claude.ai, Codex, opencode and other agents that load `SKILL.md` skills. Version **1.004**.
 
 Give it a URL. It splits the page's copy into blocks (hero, benefits, how it works, testimonials, pricing, FAQ, CTA…) and, for every block, writes what the block does, how it is built (parts, order, words and characters per part, techniques, tone), a reusable prompt that writes the same kind of block for another product, and an example written from that prompt and measured against it. It copies the shape of the text, never the text: a script refuses any result that shares six words in a row with the page or names its brand.
 
@@ -42,7 +42,7 @@ These screenshots are the test fixture (`tests/fixtures/studio.html`, a fictiona
 
 ## Install
 
-Download `page-text-to-prompts.zip` from the latest release and either upload it to claude.ai (Customize › Skills › Upload a skill) or unpack it into your agent's skills folder (for Claude Code, `~/.claude/skills/`). No `npm install`: `dist/` carries everything. Node 22 or later; Chrome, Chromium or Edge for the render (`CHROME_PATH` to choose one), and without one only the HTML layer is read.
+Download `page-text-to-prompts.zip` from the latest release and either upload it to claude.ai (Customize › Skills › Upload a skill) or unpack it into your agent's skills folder (for Claude Code, `~/.claude/skills/`). No `npm install`: `dist/` carries everything. If your agent's terminal cannot reach GitHub, download the zip in a browser and unpack it yourself; the skill itself only needs network access to the page it reads. Node 22 or later; Chrome, Chromium or Edge for the render (`CHROME_PATH` to choose one), and without one only the HTML layer is read.
 
 ## Develop
 

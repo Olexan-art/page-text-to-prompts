@@ -25,6 +25,7 @@ if (!file && !url) {
   process.exit(1);
 }
 
+const started = Date.now();
 const input = file ? { html: readFileSync(file, "utf8"), url: url || null } : { url };
 const result = await readPage(input, { render: !args.includes("--no-render") });
 
@@ -50,3 +51,6 @@ console.log(`analysis.md: ${draftPath}  (draft: fill it in, one line per element
 console.log(`layers: ${page.page.layers.join(" + ")}${page.page.rendered ? ` (${page.page.browser})` : ` (no render: ${page.page.renderReason})`}`);
 console.log(`candidates: ${page.blocks.length} blocks, ${page.excluded.length} excluded`);
 console.log(`visible words: ${v.totalWords} · js_only ${pct(v.jsOnlyShare)} · collapsed ${pct(v.collapsedShare)} · hidden ${v.hidden.count} · a11y_only ${v.a11yOnly.count}`);
+console.log(`done in ${((Date.now() - started) / 1000).toFixed(1)}s`);
+// Nothing should hold the process open after this (keep-alive sockets, a slow browser exit).
+process.exit(0);

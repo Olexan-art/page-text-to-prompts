@@ -147,14 +147,15 @@ export async function openBrowser(browser = findBrowser()) {
       port = readFileSync(portFile, "utf8").split(/\r?\n/)[0].trim();
       if (!port) await sleep(50);
     }
-    const list = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json();
+    const list = await (await fetch(`http://127.0.0.1:${port}/json/list`, { signal: AbortSignal.timeout(5_000) })).json();
     const tab = list.find((t) => t.type === "page");
     if (!tab) throw new Error("launch_failed");
 
     const ws = new WebSocket(tab.webSocketDebuggerUrl);
     await new Promise((resolve, reject) => {
-      ws.addEventListener("open", resolve, { once: true });
-      ws.addEventListener("error", () => reject(new Error("launch_failed")), { once: true });
+      const timer = setTimeout(() => reject(new Error("launch_failed")), 5_000);
+      ws.addEventListener("open", () => { clearTimeout(timer); resolve(); }, { once: true });
+      ws.addEventListener("error", () => { clearTimeout(timer); reject(new Error("launch_failed")); }, { once: true });
     });
     const session = new Session(ws);
     return {
@@ -179,7 +180,10 @@ export async function openBrowser(browser = findBrowser()) {
  * Load a URL and wait until the network has been quiet for `quietMs`, or `capMs` has passed.
  * Returns the final URL the tab is on.
  */
-export async function loadAndSettle(session, url, { quietMs = 800, capMs = 15_000 } = {}) {
+/** Analytics and chat widgets keep the network busy forever and carry no copy; they are not loaded. */
+export const BLOCKED_URLS = ["*google-analytics.com*", "*googletagmanager.com*", "*doubleclick.net*", "*facebook.net*", "*connect.facebook.*", "*hotjar.*", "*clarity.ms*", "*segment.io*", "*segment.com*", "*intercom.io*", "*intercomcdn.*", "*mixpanel.com*", "*amplitude.com*", "*fullstory.com*", "*optimizely.com*", "*tiktok.com*", "*snap.licdn.com*", "*bat.bing.com*", "*yandex.*", "*.mp4*", "*.webm*", "*youtube.com/embed*", "*player.vimeo.com*"];
+
+export async function loadAndSettle(session, url, { quietMs = 600, capMs = 10_000 } = {}) {
   let inflight = 0;
   let lastActivity = Date.now();
   const bump = (delta) => () => {
@@ -195,8 +199,13 @@ export async function loadAndSettle(session, url, { quietMs = 800, capMs = 15_00
     lastActivity = Date.now();
   });
 
+  // A page that opens alert(), confirm() or a beforeunload prompt would stall every step after it.
+  session.on("Page.javascriptDialogOpening", () => {
+    session.send("Page.handleJavaScriptDialog", { accept: true }).catch(() => {});
+  });
   await session.send("Page.enable");
   await session.send("Network.enable");
+  await session.send("Network.setBlockedURLs", { urls: BLOCKED_URLS });
   await session.send("Runtime.enable");
   await session.send("Emulation.setDeviceMetricsOverride", { width: VIEWPORT.width, height: VIEWPORT.height, deviceScaleFactor: 1, mobile: false });
   const nav = await session.send("Page.navigate", { url });

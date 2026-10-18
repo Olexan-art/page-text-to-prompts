@@ -19,7 +19,9 @@ It reads the page three ways (source HTML, a render in the local Chrome or Edge 
 - `analysis.md`: the draft you fill in, one header per candidate with a guessed type.
 - `page.json`: everything, for the build. You do not need to open it.
 
-`REFUSED <code>` (exit 2) means stop and tell the user (codes at the end).
+`REFUSED <code>` (exit 2) means stop and tell the user (codes at the end). A normal read takes 5 to 30 seconds and prints its progress; the render gives up after 45 seconds and the read goes on from the HTML alone.
+
+**If the scripts cannot run here** (no Node 22, no shell, or the shell has no network so the read ends `REFUSED unreachable`), say so in one line and offer the saved-page route below. Do not write your own reading of the page from a browsing tool and present it as this skill's result: the layers, counts, checks and prompts come only from the scripts.
 
 ## 2. Fill in `work/analysis.md`
 
