@@ -11,7 +11,7 @@ Three steps. Steps 1 and 3 are scripts. Step 2 is your judgement. Run every comm
 
 **Do not ask the user anything before starting.** A URL is enough; every option has a default below. Ask only if no URL was given.
 
-**First run:** if `node_modules/` is missing here, run `npm install --omit=dev` (it installs cheerio and nothing else). Node 22 or later. Rendering uses Chrome, Chromium or Edge already on the machine (set `CHROME_PATH` to point at one); nothing is downloaded. With no browser, step 1 still works from the raw HTML and says so.
+**No install step.** The scripts in `dist/` carry everything they need; run them with Node 22 or later. Rendering uses Chrome, Chromium or Edge already on the machine (set `CHROME_PATH` to point at one); nothing is downloaded. With no browser, step 1 still works from the raw HTML and says so.
 
 ## Defaults (use them, do not ask)
 
@@ -25,7 +25,7 @@ Three steps. Steps 1 and 3 are scripts. Step 2 is your judgement. Run every comm
 ## 1. Read the page
 
 ```
-node scripts/read.mjs <url> --out page.json
+node dist/read.mjs <url> --out page.json
 ```
 
 The script reads three layers and compares them:
@@ -50,7 +50,7 @@ Names that exist only in the accessibility tree (aria-labels, image alt text, sc
 
 `page.json` holds `page` (URL, `lang`, `title`, `metaDescription`, Open Graph, `rendered`, `layers`), `visibility`, `blocks` (candidates `b01`…, each with the `evidence` for its boundaries, `words`, `statusWords` and `elements`: `type`, `text`, `words`, `chars`, `group` and `item` for repeated cards, `status`) and `excluded` (navigation, header, footer, overlays, legal lines, each with a reason).
 
-A saved page goes in with `node scripts/read.mjs --file saved.html --url <its address> --out page.json`; only the `html` layer is read then.
+A saved page goes in with `node dist/read.mjs --file saved.html --url <its address> --out page.json`; only the `html` layer is read then.
 
 If the script prints `REFUSED <code>` (exit 2), stop and tell the user what the code means (table at the end).
 
@@ -81,7 +81,7 @@ Write `analysis.json` in the shape `references/analysis-schema.md` gives.
 ## 3. Check and build
 
 ```
-node scripts/build.mjs page.json analysis.json --html report.html --md page-prompts.md --json page-prompts.json
+node dist/build.mjs page.json analysis.json --html report.html --md page-prompts.md --json page-prompts.json
 ```
 
 The script runs six checks and writes nothing unless all pass:

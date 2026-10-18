@@ -138,3 +138,8 @@ test("the report, markdown and json render from the fixture", async () => {
   assert.ok(buildMarkdown({ page, analysis: a }).includes("```"));
   assert.equal(buildJson({ page, analysis: a }).blocks.length, 9);
 });
+
+test("the bundled reader carries no __name helper into the page scripts", () => {
+  const dist = readFileSync(join(here, "..", "dist", "read.mjs"), "utf8");
+  assert.equal(/__name\(/.test(dist), false, "keepNames must stay off in tools/build.mjs");
+});

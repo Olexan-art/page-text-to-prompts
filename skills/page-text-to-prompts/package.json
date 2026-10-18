@@ -10,9 +10,14 @@
   "scripts": {
     "read": "node scripts/read.mjs",
     "build": "node scripts/build.mjs",
-    "test": "node --test tests/skill.test.mjs"
+    "test": "node --test tests/skill.test.mjs",
+    "bundle": "node tools/build.mjs",
+    "zip": "node tools/zip.mjs"
   },
   "dependencies": {
     "cheerio": "^1.2.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
   }
 }
