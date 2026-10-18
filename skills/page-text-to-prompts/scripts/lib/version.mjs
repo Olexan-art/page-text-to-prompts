@@ -1,2 +1,2 @@
 // One version for the scripts, the report and the JSON. Thousandths: 1.001, 1.002, …
-export const VERSION = "1.004";
+export const VERSION = "1.005";

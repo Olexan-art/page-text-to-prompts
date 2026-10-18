@@ -1,6 +1,6 @@
 # Page text to prompts
 
-An Agent Skill from [GetLoopLoop](https://www.getlooploop.com) for Claude Code, claude.ai, Codex, opencode and other agents that load `SKILL.md` skills. Version **1.004**.
+An Agent Skill from [GetLoopLoop](https://www.getlooploop.com) for Claude Code, claude.ai, Codex, opencode and other agents that load `SKILL.md` skills. Version **1.005**.
 
 Give it a URL. It splits the page's copy into blocks (hero, benefits, how it works, testimonials, pricing, FAQ, CTA…) and, for every block, writes what the block does, how it is built (parts, order, words and characters per part, techniques, tone), a reusable prompt that writes the same kind of block for another product, and an example written from that prompt and measured against it. It copies the shape of the text, never the text: a script refuses any result that shares six words in a row with the page or names its brand.
 
@@ -32,11 +32,7 @@ The same report in the dark theme:
 
 ![The report, dark theme](docs/report-dark.png)
 
-The report opens in English and switches to Ukrainian with the EN / UK buttons in its header (or `#lang=uk` on the link); both languages are in the one file. The prompts and examples stay in the language the agent wrote them in, which by default is the user's. Here is the same page analysed in Ukrainian, with the frame switched to UK:
-
-![The report in Ukrainian](docs/report-uk.png)
-
-![A block, in Ukrainian](docs/report-block-uk.png)
+Everything the skill writes is in English by default: the report, page-prompts.md, the prompts and the examples. The report also carries a Ukrainian version of its own labels, behind the EN / UK switch in its header; prompts and examples are written in another language only when the user asks for one.
 
 These screenshots are the test fixture (`tests/fixtures/studio.html`, a fictional studio) read from a saved file, so only the HTML layer appears; a live URL adds the render and accessibility layers.
 

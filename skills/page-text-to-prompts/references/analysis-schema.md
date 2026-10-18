@@ -4,7 +4,7 @@ The agent normally writes the short `analysis.md` that SKILL.md shows; the build
 
 ```json
 {
-  "language": "uk",
+  "language": "en",
   "example_product": "a fictional booking app for small pilates studios",
   "profile": {
     "page_type": "SaaS landing",
