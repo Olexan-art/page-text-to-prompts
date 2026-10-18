@@ -1,8 +1,8 @@
 # Page text to prompts
 
-An Agent Skill from [GetLoopLoop](https://www.getlooploop.com) for Claude Code, claude.ai, Codex, opencode and other agents that load `SKILL.md` skills. Version **1.006**.
+An Agent Skill from [GetLoopLoop](https://www.getlooploop.com) for Claude Code, claude.ai, Codex, opencode and other agents that load `SKILL.md` skills. Version **1.007**.
 
-Give it a URL. It splits the page's copy into blocks (hero, benefits, how it works, testimonials, pricing, FAQ, CTA…) and, for every block, writes what the block does, how it is built (parts, order, words and characters per part, techniques, tone), a reusable prompt that writes the same kind of block for another product, and an example written from that prompt and measured against it. It copies the shape of the text, never the text: a script refuses any result that shares six words in a row with the page or names its brand.
+Give it a URL. It splits the page's copy into blocks (hero, benefits, how it works, testimonials, pricing, FAQ, CTA…) and, for every block, writes what the block does, how it is built (parts, order, words per part, techniques, tone), a reusable prompt that writes the same kind of block for another product, and an example written from that prompt and measured against it. It copies the shape of the text, never the text: a script refuses any result that shares six words in a row with the page or names its brand.
 
 The page is read three ways and compared: the raw HTML, the page rendered in the browser already on the machine (a fresh throwaway profile, desktop 1440 × 900, scrolled, FAQ opened), and its accessibility tree. So the report can say which text appears only after JavaScript, which was folded behind a click, and which exists only for screen readers.
 
@@ -24,9 +24,9 @@ Every block: its job, its structure with word ranges (the dot is the example's c
 
 ![One block: structure, techniques, prompt and measured example](docs/report-block.png)
 
-Repeated cards are one group with a count; elements that stand for facts (prices, clients, guarantees) are drawn as sample data the user must replace, and the prompt forbids inventing them:
+Repeated cards are one group with a count (here three plans), and the example is written for one card; elements that stand for facts (prices, clients, guarantees) are drawn as sample data the user must replace, and the prompt forbids inventing them:
 
-![The pricing block: three plans as one group, facts marked as sample data](docs/report-pricing.png)
+![The pricing block: a group of three plans, one example card, facts marked as sample data](docs/report-pricing.png)
 
 The same report in the dark theme:
 
@@ -34,7 +34,7 @@ The same report in the dark theme:
 
 Everything the skill writes is in English by default: the report, page-prompts.md, the prompts and the examples. The report also carries a Ukrainian version of its own labels, behind the EN / UK switch in its header; prompts and examples are written in another language only when the user asks for one.
 
-These screenshots are the test fixture (`tests/fixtures/studio.html`, a fictional studio) read from a saved file, so only the HTML layer appears; a live URL adds the render and accessibility layers.
+These screenshots are the test fixture (`tests/fixtures/studio.html`, a fictional studio) read from a saved file, so only the HTML layer appears: the report says "HTML only", and the folded FAQ answers are found from the markup. A live URL adds the render and the accessibility tree, and with them the `js_only` and `not_in_a11y` statuses.
 
 ## Install
 
@@ -60,7 +60,7 @@ skills/page-text-to-prompts/
   SKILL.md                  instructions for the agent
   references/               block types, the variable dictionary, the analysis.json schema
   scripts/read.mjs          step 1: three layers → page.json
-  scripts/build.mjs         step 3: six checks → report.html, page-prompts.md, page-prompts.json
+  scripts/build.mjs         step 3: five checks → report.html, page-prompts.md, page-prompts.json
   scripts/lib/              the layers, the checks, the report
   dist/                     the same scripts bundled with cheerio: no npm install
   tools/                    the bundler and the zip packer
