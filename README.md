@@ -40,6 +40,30 @@ These screenshots are the test fixture (`tests/fixtures/studio.html`, a fictiona
 
 Download `page-text-to-prompts.zip` from the latest release and either upload it to claude.ai (Customize › Skills › Upload a skill) or unpack it into your agent's skills folder (for Claude Code, `~/.claude/skills/`). No `npm install`: `dist/` carries everything. If your agent's terminal cannot reach GitHub, download the zip in a browser and unpack it yourself; the skill itself only needs network access to the page it reads. Node 22 or later; Chrome, Chromium or Edge for the render (`CHROME_PATH` to choose one), and without one only the HTML layer is read.
 
+## Asking your agent
+
+A short request with a clear stop condition and a reply format keeps the agent on the procedure. Copy it and put in your page:
+
+```markdown
+## Task
+Run the skill `page-text-to-prompts` on 1 page. Write its prompts and report.
+
+## Inputs
+- Page: https://example.com/page
+- Working folder: ./prompts
+
+## Rules
+1. Read SKILL.md first. Follow it exactly.
+2. Write every file into the working folder.
+
+## Stop condition
+Stop when report.html exists. Show it.
+
+## Reply format
+- The report link or path.
+- The blocks found, and the 3 prompts most worth reusing.
+```
+
 ## Develop
 
 ```
