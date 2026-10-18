@@ -10,6 +10,9 @@ import { runChecks, brandTerms } from "../scripts/lib/checks.mjs";
 import { renderReport } from "../scripts/lib/report.mjs";
 import { buildMarkdown, buildJson } from "../scripts/lib/outputs.mjs";
 import { readPage } from "../scripts/lib/reading.mjs";
+import { parseCompact, serializeCompact, draftCompact } from "../scripts/lib/compact.mjs";
+import { generatePrompt } from "../scripts/lib/prompt.mjs";
+import { buildBrief, guessType } from "../scripts/lib/draft.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const fixture = (name) => readFileSync(join(here, "fixtures", name), "utf8");
@@ -100,14 +103,13 @@ test("variables refuse an undeclared name and an unmarked fact", async () => {
   assert.ok(problems.some((p) => p.includes("risk_remover")));
 });
 
-test("example refuses an element far outside its range and a missing card", async () => {
+test("examples are measured, not refused: misses become warnings", async () => {
   const page = await studioPage();
   const a = analysis();
   a.blocks[0].example[1].text = "Коротко";
-  a.blocks[2].example[1].items.pop();
-  const problems = runChecks(a, page).results.example;
-  assert.ok(problems.some((p) => p.includes("p01 › h1")));
-  assert.ok(problems.some((p) => p.includes("2 items")));
+  const checks = runChecks(a, page);
+  assert.equal(checks.ok, true);
+  assert.ok(checks.warnings.some((p) => p.includes("p01 › h1")));
 });
 
 test("volume refuses a leaf without a character range", async () => {
@@ -159,4 +161,47 @@ test("the report carries both languages and opens in English", async () => {
   assert.ok(html.includes('<span class="l-en">Result</span>'));
   assert.ok(html.includes('<span class="l-uk" lang="uk">Результат</span>'));
   assert.ok(buildMarkdown({ page, analysis: analysis() }).includes("## Blocks and prompts"));
+});
+
+test("analysis.md parses into an analysis that passes every check", async () => {
+  const page = await studioPage();
+  for (const name of ["studio-analysis.en.md", "studio-analysis.uk.md"]) {
+    const { analysis: a, problems } = parseCompact(fixture(name), page);
+    assert.deepEqual(problems, []);
+    assert.equal(a.blocks.length, 9);
+    const checks = runChecks(a, page);
+    assert.equal(checks.ok, true, name + JSON.stringify(checks.results));
+  }
+});
+
+test("the short form round-trips through serialize and parse", async () => {
+  const page = await studioPage();
+  const a = parseCompact(fixture("studio-analysis.en.md"), page).analysis;
+  const again = parseCompact(serializeCompact(a), page).analysis;
+  assert.deepEqual(again.blocks.map((b) => b.structure), a.blocks.map((b) => b.structure));
+});
+
+test("a bad line is reported, not guessed", () => {
+  const { problems } = parseCompact(["language: en", "", "## p01 hero | Hero | b01", "role: x", "- h1 | many | must | example", ""].join("\n"), null);
+  assert.ok(problems.some((p) => p.includes("word range")));
+});
+
+test("prompts are assembled in English by default and in Ukrainian on request", async () => {
+  const page = await studioPage();
+  const a = parseCompact(fixture("studio-analysis.en.md"), page).analysis;
+  const en = generatePrompt(a.blocks[0], a.language);
+  assert.ok(en.startsWith("Write a hero block for {product}, aimed at {audience}. Write in English."));
+  assert.ok(en.includes("Facts: use {risk_remover} only if provided."));
+  const uk = generatePrompt(a.blocks[0], "uk");
+  assert.ok(uk.startsWith("Напиши hero-блок для {product}"));
+});
+
+test("the brief carries word counts and the draft one header per candidate", async () => {
+  const page = await studioPage();
+  const brief = buildBrief(page);
+  assert.match(brief, /- h1 \d+w: Your students book/);
+  const draft = draftCompact(page, guessType);
+  assert.equal((draft.match(/^## p\d\d /gm) || []).length, 9);
+  assert.match(draft, /^language: en$/m);
+  assert.ok(draft.includes("## p01 hero"));
 });

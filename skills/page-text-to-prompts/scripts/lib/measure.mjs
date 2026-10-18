@@ -42,7 +42,8 @@ export function measureBlock(block) {
     }
     if (Array.isArray(spec.children)) {
       const cards = Array.isArray(ex.items) ? ex.items : [];
-      if (cards.length !== spec.count) problems.push(`${label}: ${cards.length} items in the example, the structure says ${spec.count}`);
+      // One example card is enough; more than the structure has is a mismatch.
+      if (cards.length < 1 || cards.length > spec.count) problems.push(`${label}: ${cards.length} items in the example, the structure says ${spec.count}`);
       cards.forEach((card, ci) => {
         spec.children.forEach((child, j) => {
           const cell = Array.isArray(card) ? card[j] : undefined;

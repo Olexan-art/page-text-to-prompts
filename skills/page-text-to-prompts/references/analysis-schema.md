@@ -1,6 +1,6 @@
-# analysis.json
+# analysis.json (the full form)
 
-What step 2 writes and step 3 checks. `tests/fixtures/studio-analysis.json` is a complete, passing example.
+The agent normally writes the short `analysis.md` that SKILL.md shows; the build turns it into this object. `build.mjs` still accepts this JSON directly, for tools that produce it. `tests/fixtures/studio-analysis.en.md` and `studio-analysis.json` are complete, passing examples of both forms.
 
 ```json
 {

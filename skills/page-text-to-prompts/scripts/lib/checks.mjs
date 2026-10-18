@@ -13,7 +13,8 @@ export const AWARENESS = ["unaware", "problem_aware", "comparing_solutions", "pr
 /** Canonical variables that stand for facts: declaring one without fact:true is refused. */
 export const FACT_VARIABLES = ["risk_remover", "outcome_number", "customer_count", "customer_n", "testimonial_n", "plan_n", "guarantee", "deadline"];
 export const SHINGLE = 6;
-export const CHECK_IDS = ["overlap", "brand", "volume", "variables", "example", "blocks"];
+/** The checks that refuse a build. Examples are measured and marked, never refused. */
+export const CHECK_IDS = ["overlap", "brand", "volume", "variables", "blocks"];
 
 const VAR = /\{([a-z][a-z0-9_]*)\}/g;
 const str = (v) => typeof v === "string" && v.trim().length > 0;
@@ -98,7 +99,9 @@ export function checkSchema(analysis) {
     if (!str(b.id)) p.push("a block has no id");
     if (!BLOCK_TYPES.includes(b.block_type)) p.push(`${id}.block_type: "${b.block_type}" is not one of the listed types (use "other" with block_type_reason)`);
     if (b.block_type === "other" && !str(b.block_type_reason)) p.push(`${id}.block_type_reason: needed for "other"`);
-    for (const k of ["name", "role", "prompt"]) if (!str(b[k])) p.push(`${id}.${k}: missing`);
+    for (const k of ["name", "role"]) if (!str(b[k])) p.push(`${id}.${k}: missing`);
+    // The prompt is assembled from the structure, so every element needs its "must".
+    if (!str(b.prompt)) for (const leaf of leavesOf(b.structure)) if (!str(leaf.must)) p.push(`${id} › ${leaf.element}.must: missing (it becomes the prompt line for this element)`);
     if (!Array.isArray(b.structure) || !b.structure.length) p.push(`${id}.structure: missing`);
     if (!Array.isArray(b.techniques) || !b.techniques.length) p.push(`${id}.techniques: missing`);
   }
@@ -140,6 +143,8 @@ export function checkVariables(analysis) {
     for (const t of b.techniques || []) scan(`${b.id}.techniques`, t);
     for (const leaf of leavesOf(b.structure)) scan(`${b.id}.${leaf.element}.must`, leaf.must);
   }
+  // The assembled prompt always names these two.
+  for (const name of ["product", "audience"]) if (!used.has(name)) used.set(name, "every prompt");
   for (const [name, where] of used) {
     if (!declared[name]) p.push(`{${name}} is used in ${where} but not declared in variables`);
   }
@@ -203,7 +208,7 @@ export function checkBrand(analysis, page) {
   return p;
 }
 
-/** All checks. Returns { ok, results: { id: problems[] }, schema: problems[] }. */
+/** All checks. Returns { ok, results: { id: problems[] }, schema: problems[], warnings: problems[] }. */
 export function runChecks(analysis, page) {
   const schema = checkSchema(analysis);
   const volume = checkVolume(analysis);
@@ -212,10 +217,10 @@ export function runChecks(analysis, page) {
     brand: checkBrand(analysis, page),
     volume,
     variables: checkVariables(analysis),
-    // An example can only be measured against ranges that exist.
-    example: schema.length || volume.length ? [] : checkExamples(analysis),
     blocks: checkBlocks(analysis, page),
   };
   const ok = !schema.length && Object.values(results).every((list) => !list.length);
-  return { ok, schema, results };
+  // An example can only be measured against ranges that exist; its misses are warnings.
+  const warnings = schema.length || volume.length ? [] : checkExamples(analysis);
+  return { ok, schema, results, warnings };
 }
