@@ -6,15 +6,21 @@ import { COPY, plural } from "./copy.mjs";
 import { CHECK_IDS, FACT_VARIABLES } from "./checks.mjs";
 import { measureBlock, measureLeaf } from "./measure.mjs";
 import { CORNER, MOTANKA, ORNAMENT } from "./sprites.mjs";
+import { GLLMOLFAR_ICON } from "./gllmolfarIcon.mjs";
 import { escapeHtml as esc } from "./text.mjs";
 import { VERSION } from "./version.mjs";
 
 const GROUP = { hero: "hook", cta: "hook", lead_form: "hook", newsletter: "hook", social_proof_logos: "proof", testimonials: "proof", case_study: "proof", stats: "proof", guarantee: "proof", problem: "arg", solution: "arg", features: "arg", benefits: "arg", how_it_works: "arg", use_cases: "arg", comparison: "arg", about: "arg", team: "proof", pricing: "dec", faq: "dec" };
-const FOOTER_LINKS = [
+/** The footer link to GLLmolfar, GetLoopLoop's desktop crawler, with this skill as utm_source. */
+export const GLLMOLFAR_HREF = "https://www.getlooploop.com/gllmolfar?utm_source=page-text-to-prompts&utm_medium=skill-report&utm_campaign=gllmolfar";
+
+export const FOOTER_LINKS = [
   { name: "GetLoopLoop", href: "https://www.getlooploop.com", icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 7.5a4.5 4.5 0 1 0 0 9c2.4 0 3.4-1.9 4.5-4.5s2.1-4.5 4.5-4.5a4.5 4.5 0 1 1 0 9c-2.4 0-3.4-1.9-4.5-4.5S9.9 7.5 7.5 7.5z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg>' },
   { name: "X", href: "https://x.com/Looploopnow", icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>' },
   { name: "Bluesky", href: "https://bsky.app/profile/getlooploop.bsky.social", icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M5.2 3.3C8 5.4 11 9.6 12 11.8c1-2.2 4-6.4 6.8-8.5 2-1.5 5.2-2.6 5.2 1 0 .7-.4 6-.6 6.9-.8 3-3.8 3.7-6.5 3.3 4.7.8 5.9 3.4 3.3 6.1-4.9 5-7-1.3-7.6-2.9l-.6-1.7-.6 1.7c-.6 1.6-2.7 7.9-7.6 2.9-2.6-2.7-1.4-5.3 3.3-6.1-2.7.4-5.7-.3-6.5-3.3C.4 10.3 0 5 0 4.3c0-3.6 3.2-2.5 5.2-1z"/></svg>' },
   { name: "LinkedIn", href: "https://www.linkedin.com/in/olexandr-tsyrkin-07460539", author: true, icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg>' },
+  // The app's own icon; the label beside it names the app, so alt is empty.
+  { name: "GLLmolfar", href: GLLMOLFAR_HREF, label: "footerGllmolfar", icon: `<img class="gm-ico" src="${GLLMOLFAR_ICON}" alt="" width="16" height="16">` },
 ];
 
 const CSS = `
@@ -70,7 +76,7 @@ h1{margin:26px 0 6px;font-size:clamp(30px,4.4vw,54px);font-weight:800;line-heigh
 .checks{margin:0;padding:0;list-style:none;display:grid;gap:8px}@media (min-width:900px){.checks{grid-template-columns:repeat(2,minmax(0,1fr))}}.checks li{display:grid;grid-template-columns:24px minmax(0,1fr);gap:2px 10px;border:1px solid var(--line-soft);border-radius:10px;background:var(--panel-2);padding:11px 14px}.checks svg{width:20px;height:20px;color:var(--green);grid-row:span 2}.checks b code{font-weight:400;color:var(--faint);margin-left:6px}.checks span{font-size:13.5px;color:var(--muted)}
 .tbl{overflow-x:auto;border:1px solid var(--line-soft);border-radius:10px}table{width:100%;border-collapse:collapse;font-size:14px;color:var(--ink-2)}th,td{border-bottom:1px solid var(--line-soft);padding:9px 12px;text-align:left;vertical-align:top}thead th{background:var(--panel-2);font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}tbody th{font:600 13px var(--mono);color:var(--ink)}tbody tr:last-child>*{border-bottom:0}.path{display:flex;flex-wrap:wrap;gap:4px}.path a{font:11.5px var(--mono);border-radius:4px;padding:1px 7px;background:var(--accent-soft);color:var(--accent);text-decoration:none}
 .files{display:flex;flex-wrap:wrap;gap:10px}.file{display:inline-flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:10px;padding:10px 14px;font:13px var(--mono)}.file span{color:var(--muted);font-family:var(--sans)}
-.motanka{width:30px;height:auto;opacity:var(--deco-mark);filter:var(--deco-filter);flex:none}.foot-made{display:flex;align-items:center;gap:12px;max-width:600px}.foot{position:relative;z-index:1;margin-top:28px;border-top:1px solid var(--line-soft);padding:18px 0 4px;color:var(--muted);font-size:14px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px 24px;align-items:center}.foot p{margin:0}.links{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}.links a{display:inline-flex;align-items:center;gap:7px;color:var(--ink);text-decoration:none;border:1px solid var(--control);border-radius:999px;padding:6px 13px 6px 10px;background:var(--panel);font-size:14px}.links a:hover{border-color:var(--accent)}.links svg{width:15px;height:15px}
+.motanka{width:30px;height:auto;opacity:var(--deco-mark);filter:var(--deco-filter);flex:none}.foot-made{display:flex;align-items:center;gap:12px;max-width:600px}.foot{position:relative;z-index:1;margin-top:28px;border-top:1px solid var(--line-soft);padding:18px 0 4px;color:var(--muted);font-size:14px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px 24px;align-items:center}.foot p{margin:0}.links{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}.links a{display:inline-flex;align-items:center;gap:7px;color:var(--ink);text-decoration:none;border:1px solid var(--control);border-radius:999px;padding:6px 13px 6px 10px;background:var(--panel);font-size:14px}.links a:hover{border-color:var(--accent)}.links svg{width:15px;height:15px}.links .gm-ico{width:16px;height:16px;flex:none;border-radius:3px}
 `;
 
 const JS = `
@@ -239,7 +245,7 @@ export function renderReport({ page, analysis }) {
   out.push(`<section class="panel"><div class="ph"><h2>${t("files")}</h2><span class="cap">${t("filesCap")}</span></div><div class="files"><span class="file">page-prompts.md <span>${t("fileMd")}</span></span><span class="file">page-prompts.json <span>${t("fileJson")}</span></span><span class="file">page.json <span>${t("filePage")}</span></span></div></section>`);
 
   // Footer
-  const links = FOOTER_LINKS.map((l) => `<li><a href="${l.href}" rel="noopener noreferrer" target="_blank">${l.icon}<span>${l.author ? `${esc(l.name)} · ${t("footerAuthor")}` : esc(l.name)}</span></a></li>`).join("");
+  const links = FOOTER_LINKS.map((l) => `<li><a href="${esc(l.href)}" rel="noopener noreferrer" target="_blank">${l.icon}<span>${l.author ? `${esc(l.name)} · ${t("footerAuthor")}` : l.label ? `${esc(l.name)} · ${t(l.label)}` : esc(l.name)}</span></a></li>`).join("");
   out.push(`<div class="deco deco--foot" aria-hidden="true"></div><footer class="foot"><div class="foot-made"><img class="motanka" src="${MOTANKA}" alt="" width="30" height="39"><p>${t("footer")} v${VERSION}</p></div><ul class="links">${links}</ul></footer><div class="corner corner--br" aria-hidden="true"></div>`);
 
   const data = {

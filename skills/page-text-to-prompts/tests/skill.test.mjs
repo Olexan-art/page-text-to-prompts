@@ -222,3 +222,15 @@ test("derived character ranges stay out of the prompt and out of the score", asy
   assert.match(prompt, /- Eyebrow: 3–5 words; the main change/);
   assert.match(generatePrompt({ ...a.blocks[7], block_type: "faq" }, "en"), /^Write an FAQ block/);
 });
+
+test("the footer links to GLLmolfar with its own icon inline, utm parameters, both languages and no number", async () => {
+  const page = await studioPage();
+  const html = renderReport({ page, analysis: analysis(), checks: null });
+  const href = "https://www.getlooploop.com/gllmolfar?utm_source=page-text-to-prompts&amp;utm_medium=skill-report&amp;utm_campaign=gllmolfar";
+  const at = html.indexOf(`href="${href}"`);
+  assert.ok(at > 0, "the GLLmolfar link");
+  const a = html.slice(at, html.indexOf("</a>", at));
+  assert.match(a, /<img class="gm-ico" src="data:image\/png;base64,iVBORw0KGgo[^"]+" alt="" width="16" height="16">/);
+  for (const t of ["GLLmolfar", "crawl your whole site", "проскануйте весь сайт"]) assert.ok(a.includes(t), t);
+  assert.doesNotMatch(a.replace(/<img[^>]*>/, "").replace(/^href="[^"]+"/, ""), /\d/, "no page count or price");
+});

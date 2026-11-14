@@ -134,6 +134,7 @@ export const COPY = {
     filePage: "the three layers and the candidates",
     footer: "Made with the page-text-to-prompts skill: the scripts read one page and sent nothing anywhere; the analysis and the prompts were written by the agent that ran the skill.",
     footerAuthor: "the author",
+    footerGllmolfar: "crawl your whole site",
     help: {
       words: ["Visible words", "measured", [["Formula", "The words of every element visible in the render or folded behind a click; navigation, the footer and overlays are not counted."], ["Unit", "whitespace-separated tokens with a letter or digit"], ["Limits", "Text drawn in images is not read."]]],
       js: ["Only after JavaScript", "measured", [["Formula", "Words with the status js_only divided by all visible words."], ["Threshold", "Above 10%, a crawler without JavaScript reads a noticeably shorter page."], ["Limits", "One desktop render at 1440 × 900."]]],
@@ -275,6 +276,7 @@ export const COPY = {
     filePage: "три шари й кандидати",
     footer: "Зроблено скілом page-text-to-prompts: скрипти прочитали одну сторінку й нічого нікуди не надсилали; аналіз і промти написав агент, який запустив скіл.",
     footerAuthor: "автор",
+    footerGllmolfar: "проскануйте весь сайт",
     help: {
       words: ["Видимі слова", "measured", [["Формула", "Слова всіх елементів, які видно в рендері або заховано за кліком; навігація, футер і оверлеї не рахуються."], ["Одиниця", "токени між пробілами, що мають літеру чи цифру"], ["Обмеження", "Текст на зображеннях не читається."]]],
       js: ["Лише після JavaScript", "measured", [["Формула", "Слова зі статусом js_only поділити на всі видимі слова."], ["Поріг", "Понад 10% означає, що бот без JavaScript читає помітно коротшу сторінку."], ["Обмеження", "Один рендер на десктопі 1440 × 900."]]],
