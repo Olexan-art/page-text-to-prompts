@@ -1,0 +1,19 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "page-text-to-prompts",
+  "version": "1.8.0",
+  "description": "Breaks a web page copy into blocks and writes a reusable prompt, with a measured example, for each one. Reads the page as raw HTML, as rendered in a local browser and as its accessibility tree. The scripts call no model.",
+  "author": {
+    "name": "GetLoopLoop",
+    "url": "https://www.getlooploop.com"
+  },
+  "homepage": "https://www.getlooploop.com",
+  "repository": "https://github.com/Olexan-art/page-text-to-prompts",
+  "license": "MIT",
+  "keywords": [
+    "copywriting",
+    "prompts",
+    "content",
+    "agent-skill"
+  ]
+}
