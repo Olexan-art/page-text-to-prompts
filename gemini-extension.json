@@ -1,7 +1,7 @@
 {
   "name": "page-text-to-prompts",
   "description": "Breaks a web page copy into blocks and writes a reusable prompt, with a measured example, for each one. Reads the page as raw HTML, as rendered in a local browser and as its accessibility tree. The scripts call no model.",
-  "version": "1.10.0",
+  "version": "1.11.0",
   "author": {
     "name": "GetLoopLoop"
   }
