@@ -9,15 +9,17 @@ import { generatePrompt } from "./lib/prompt.mjs";
 import { parseCompact } from "./lib/compact.mjs";
 import { buildJson, buildMarkdown } from "./lib/outputs.mjs";
 import { renderReport } from "./lib/report.mjs";
+import { VERSION } from "./lib/version.mjs";
+import { checkForUpdate, NO_UPDATE_FLAG, updateLine } from "./lib/update-check.mjs";
 
 const args = process.argv.slice(2);
 const flag = (name, fallback) => {
   const i = args.indexOf(name);
   return resolve(i >= 0 ? args[i + 1] : fallback);
 };
-const positional = args.filter((a, i) => !a.startsWith("--") && !args[i - 1]?.startsWith("--"));
+const positional = args.filter((a, i) => !a.startsWith("--") && !(args[i - 1]?.startsWith("--") && args[i - 1] !== NO_UPDATE_FLAG));
 if (positional.length < 2) {
-  console.error("Usage: node scripts/build.mjs page.json analysis.md [--html report.html] [--md page-prompts.md] [--json page-prompts.json]");
+  console.error("Usage: node scripts/build.mjs page.json analysis.md [--html report.html] [--md page-prompts.md] [--json page-prompts.json] [--no-update-check]");
   process.exit(1);
 }
 
@@ -68,3 +70,7 @@ if (checks.warnings.length) {
 console.log(`report.html: ${html}`);
 console.log(`page-prompts.md: ${md}`);
 console.log(`page-prompts.json: ${json}`);
+
+// Once a day: is a newer version of this skill published? Silent on any failure; see lib/update-check.mjs.
+const update = await checkForUpdate({ repo: "page-text-to-prompts", plugin: "page-text-to-prompts", current: VERSION });
+if (update) console.error(updateLine(update));

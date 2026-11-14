@@ -1,6 +1,6 @@
 {
   "name": "page-text-to-prompts-skill",
-  "version": "1.9.0",
+  "version": "1.10.0",
   "description": "Break a web page's copy into blocks and write a reusable prompt, with a measured example, for each one. Reads the page as raw HTML, as rendered in a local browser and as its accessibility tree. The scripts call no model.",
   "type": "module",
   "private": true,
@@ -10,7 +10,7 @@
   "scripts": {
     "read": "node scripts/read.mjs",
     "build": "node scripts/build.mjs",
-    "test": "node --test tests/skill.test.mjs tests/manifest.test.mjs",
+    "test": "node --test tests/skill.test.mjs tests/manifest.test.mjs tests/update-check.test.mjs",
     "bundle": "node tools/build.mjs",
     "zip": "node tools/zip.mjs"
   },

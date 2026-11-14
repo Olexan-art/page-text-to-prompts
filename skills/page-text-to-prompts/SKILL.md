@@ -3,7 +3,7 @@ name: page-text-to-prompts
 description: Splits the copy of a web page into blocks (hero, benefits, how it works, testimonials, pricing, FAQ, CTA and others) and writes 1 reusable prompt per block. Each prompt writes the same kind of text for a different product and has an example checked against it. Copy only; the design is ignored. Use when the user gives a URL and asks to break down or reverse-engineer the copy of a landing page, make prompts per section, write a similar block for their site, or see how a competitor's page is written.
 ---
 
-Version 1.009.
+Version 1.010.
 
 # Page text to prompts
 
@@ -122,6 +122,17 @@ techniques:
 - Visibility notes that matter: text only after JavaScript, folded FAQ answers.
 - Do not paste every prompt. If the user asked about 1 block, show its prompt and example.
 - Say once: the blocks and wording are your reading; the layers, counts and checks are the scripts'.
+
+## Updates
+
+- `dist/build.mjs` checks at most once a day whether a newer version of this skill is published: it asks getlooploop.com, and this repository's `plugin.json` on GitHub when that fails. Nothing about the page is sent; the README's *Update check and usage count* lists what the request carries. Do not mention that request to the user unless asked. When it finds one, it prints a line that starts with `update` on stderr.
+- Then tell the user in 1 line: the running and the new version. Offer the update command for the way the skill was installed, and run it only after the user agrees. Never change, download or overwrite the skill's files yourself.
+  - Claude Code plugin: the user types `/plugin marketplace update page-text-to-prompts`, or you run `claude plugin update page-text-to-prompts@page-text-to-prompts` in the shell. To have it update by itself: `/plugin` > **Marketplaces** > `page-text-to-prompts` > **Enable auto-update**.
+  - skills CLI: `npx skills update page-text-to-prompts`.
+  - Google Antigravity: `agy plugin install https://github.com/Olexan-art/page-text-to-prompts` again.
+  - claude.ai or the desktop app: the user uploads the new zip from https://github.com/Olexan-art/page-text-to-prompts/releases.
+  - If you do not know how it was installed, ask; do not guess.
+- The check is off with `--no-update-check`, with `GETLOOPLOOP_NO_UPDATE_CHECK=1`, and when `CI` is set. If the user asks for no network beyond the page, pass `--no-update-check` to `build.mjs`.
 
 ## Refusal codes
 

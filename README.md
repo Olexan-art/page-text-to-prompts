@@ -1,6 +1,6 @@
 # Page text to prompts
 
-An Agent Skill from [GetLoopLoop](https://www.getlooploop.com) for Claude Code, claude.ai, Codex, opencode and other agents that load `SKILL.md` skills. Version **1.009**.
+An Agent Skill from [GetLoopLoop](https://www.getlooploop.com) for Claude Code, claude.ai, Codex, opencode and other agents that load `SKILL.md` skills. Version **1.010**.
 
 Give it a URL. It splits the page's copy into blocks (hero, benefits, how it works, testimonials, pricing, FAQ, CTA…) and, for every block, writes what the block does, how it is built (parts, order, words per part, techniques, tone), a reusable prompt that writes the same kind of block for another product, and an example written from that prompt and measured against it. It copies the shape of the text, never the text: a script refuses any result that shares six words in a row with the page or names its brand.
 
@@ -56,6 +56,12 @@ Claude Code:
 /plugin marketplace add Olexan-art/page-text-to-prompts
 /plugin install page-text-to-prompts@page-text-to-prompts
 ```
+
+Then turn on auto-update: in `/plugin`, open **Marketplaces**, select `page-text-to-prompts` and choose **Enable auto-update**. Until you do, Claude Code keeps the version you installed; `/plugin marketplace update page-text-to-prompts` fetches a newer one by hand. In Antigravity, run the install command again to update.
+
+### Update check and usage count
+
+Once a day, the report step (`build.mjs`) asks getlooploop.com for the newest version of the skill. The request carries the skill's name, its version, the operating system (win, mac, linux or other), a random install id kept in `~/.getlooploop-skills/install-id`, and how many times the skill ran since the last check. That is all: nothing about the pages you read, no URL, no domain, no user or machine name. The server derives a country from the connection and does not store the IP address. If getlooploop.com does not answer, the skill reads the version from this repository's `plugin.json` on GitHub instead. A newer version is one line in the terminal; the agent offers the update command and runs it only if you agree. Switch it off with `GETLOOPLOOP_NO_UPDATE_CHECK=1` or `--no-update-check` (it is also off when `CI` is set): then nothing is sent and no id is created. Delete the `~/.getlooploop-skills` folder to reset the id.
 
 ## Asking your agent
 
